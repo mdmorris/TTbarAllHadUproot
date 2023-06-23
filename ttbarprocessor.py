@@ -73,7 +73,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  maxMSD=210.,
                  tau32Cut=0.65,
                  bdisc=0.5847,
-                 deepAK8Cut=0.94,
+                 deepAK8Cut= 0.177, # Super-loose  0.435, # Loose
                  useDeepAK8=True,
                  iov='2016APV',
                  bkgEst=False,
@@ -97,7 +97,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.systematics = systematics
         
         
-        self.transfer_function = np.load('plots/save.npy')
+        #self.transfer_function = np.load('plots/save.npy')
 
         
         
