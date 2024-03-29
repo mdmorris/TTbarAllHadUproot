@@ -7,6 +7,7 @@ import coffea.processor as processor
 import itertools
 import argparse
 import time
+from datetime import date
 import json
 import os
 
@@ -16,19 +17,26 @@ import warnings
 warnings.filterwarnings("ignore")
 
 savedir = 'outputs/'
-default_datastets = ['JetHT', 'QCD', 'TTbar']
-default_signals = ['RSGluon', 'ZPrime1', 'ZPrime10', 'ZPrime30', 'ZPrimeDM']
+default_datastets = ['JetHT', 'TTbar', 'QCD']
+default_signals = ['RSGluon', 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'ZPrime1']
 
 from ttbarprocessor import TTbarResProcessor
 from python.functions import printTime, makeSaveDirectories
 
 
-makeSaveDirectories()
+
+
+
 
 if __name__ == "__main__":
     
     tic = time.time()
-        
+
+    
+
+    # directory where output files are saved
+    savedir = f'outputs/testing/' 
+    
     parser = argparse.ArgumentParser(
                     prog='ttbaranalysis.py',
                     description='Run ttbarprocessor',
@@ -56,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('--blind', action='store_true', help='process 1/10th of the data')
     parser.add_argument('--bkgest', choices=['2dalphabet', 'mistag'], default=None)
     parser.add_argument('--toptagger', choices=['deepak8', 'cmsv2'], default='deepak8')
-    parser.add_argument('--ttagWP', choices=['loose', 'medium', 'tight'], default='medium')
+    parser.add_argument('--ttagWP', choices=['loose', 'medium', 'tight'], default='tight')
     parser.add_argument('--btagger', choices=['deepcsv', 'csvv2'], default='deepcsv')
     parser.add_argument('--ht', choices=['1400', '950'], default='1400')
     parser.add_argument('--noSyst', action='store_true', help='run without systematics')
@@ -85,11 +93,11 @@ if __name__ == "__main__":
     samples = args.dataset
     IOV = args.iov
     useDeepAK8 = True if (args.toptagger == 'deepak8') else False
-    useDeepCSV = True if (args.toptagger == 'deepcsv') else False
+    useDeepCSV = True if (args.btagger == 'deepcsv') else False
     htCut = 1400.0 if (args.ht == '1400') else 950.0
     dask_memory = '3GB' # priority decreases for >2GB memory
     chunksize_dask = 100000
-    chunksize_futures = 1000
+    chunksize_futures = 10000
     maxchunks = 10 if args.test else None
     
     
@@ -104,7 +112,7 @@ if __name__ == "__main__":
     
     ############################################################################################################
     #                                                                                                          #   
-    # systematics options: nominal, jes, jer, pileup, pdf, q2, btag, prefiring, hem, hemVeto, transferFunction # 
+    # systematics options: nominal, jes, jer, pileup, pdf, q2, btag, prefiring                                 # 
     #                                                                                                          #   
     # top tag category options:                                                                                #
     #                                                                                                          #
@@ -145,7 +153,8 @@ if __name__ == "__main__":
     
     
     # save analysis info #
-    with open('out.log', 'w') as f:        
+    with open('out.log', 'w') as f:  
+        print('\n'+date.today().isoformat(), file=f)
         print('\n------args------', file=f)
         for argname, value in vars(args).items(): print(argname, '=', value, file=f)
         print('----------------\n', file=f)
@@ -165,6 +174,29 @@ if __name__ == "__main__":
     if args.env == 'casa' or args.env == 'C': redirector = 'root://xcache/'
     elif args.env == 'winterfell' or args.env == 'W': redirector = '/mnt/data/cms/'
     else: redirector = 'root://cmsxrootd.fnal.gov/' # default LPC
+# #     redirector = 'root://xrootd-local.unl.edu:1094/'
+#     # redirector = 'root://cmseos.fnal.gov:1094/'
+#     redirector = 'root://cmseos.fnal.gov/'
+#     if args.signals:
+#         redirector = 'root://cmseos.fnal.gov/'
+
+    
+
+    # if ('2018' in IOV):
+        # redirector = 'root://eoscms.cern.ch//eos/cms/'
+        # redirector = 'root://xrootd-local.unl.edu:1094/'
+        # redirector = 'root://cmsxrootd.hep.wisc.edu:1094/'
+    # elif ('2017' in IOV):
+        # redirector = 'root://cmsxrootd.hep.wisc.edu:1094/'
+        # redirector = 'root://cms03.lcg.cscs.ch:1094/'
+        # redirector = 'root://xrootd-local.unl.edu:1094/'
+    # elif ('2016' in IOV):
+    #     redirector = 'root://cmseos.fnal.gov/'
+
+
+
+
+    
  
     jsonfiles = {
         "JetHT": 'data/nanoAOD/JetHT.json',
@@ -180,14 +212,45 @@ if __name__ == "__main__":
     # directories and files for dask
     upload_to_dask = ['data', 'python', 'ttbarprocessor.py']
 
+
+
+    # make output directories, save copy of processor, log changes and jobs run 
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+        os.makedirs(savedir+'logs/')
+        os.makedirs(savedir+'scale/')
+        os.makedirs(savedir+'twodalphabet/')
+        os.popen('cp ttbarprocessor.py '+savedir+'logs/ttbarprocessor_'+date.today().isoformat().replace('-','')+'.py') 
+        os.popen('cat out.log >> '+savedir+'logs/ttbarprocessor_diff.txt')
+    
+    else:
+        for f in os.listdir(savedir+'logs/'):
+            if 'ttbarprocessor' in f and 'py' in f:
+                os.popen('cat out.log >> '+savedir+'logs/ttbarprocessor_diff.txt')
+                print('diff ttbarprocessor.py '+savedir+'logs/'+f+' >> '+savedir+'logs/ttbarprocessor_diff.txt')
+                os.popen('diff ttbarprocessor.py '+savedir+'logs/'+f+' >> '+savedir+'logs/ttbarprocessor_diff.txt')
+                                
+            
+        if not os.path.exists(savedir):
+            os.makedirs(savedir+'scale/')
+        if not os.path.exists(savedir+'twodalphabet/'):
+            os.makedirs(savedir+'twodalphabet/')
+
+
+    # make image directories
+    makeSaveDirectories(coffea_dir=savedir)
+    
+
     
     
     ##### get fileset and run processor #####
 
     for sample in samples:
         
-        skipbadfiles = False if (('JetHT' in sample) or ('RSGluon' in sample) or ('ZPrime' in sample)) else True
-    
+        # skipbadfiles = False if (('JetHT' in sample) or ('RSGluon' in sample) or ('ZPrime' in sample)) else True
+        skipbadfiles = False
+        #skipbadfiles = True
+        
         inputfile = jsonfiles[sample]
         files = []
         with open(inputfile) as json_file:
@@ -229,6 +292,8 @@ if __name__ == "__main__":
                 # add redirector; select file for testing
                 files = [redirector + f for f in files]
                 if args.test: files = [files[int(len(files)/2)]]
+                    
+                
                 fileset = {sample: files}  
                                                  
                 print(files[0])                  
@@ -238,8 +303,14 @@ if __name__ == "__main__":
                 if args.bkgest: subString += '_bkgest'
                     
                     
-                savedir = f'outputs/{args.ttagWP}/'    
-                if (args.toptagger == 'cmsv2') and (args.btagger == 'csvv2'): savedir = 'outputs/AC/'
+
+                if (args.toptagger == 'cmsv2') and (args.btagger == 'csvv2'): savedir = 'outputs/oldanalysis/'
+
+
+
+                
+
+
 
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
                 if 'RSGluon' in sample:
@@ -259,8 +330,10 @@ if __name__ == "__main__":
 
                 
                 if args.blind: savefilename = savefilename.replace('.coffea', '_blind.coffea')
+                if args.noSyst: savefilename = savefilename.replace('.coffea', '_noSyst.coffea')
                 if args.test: savefilename = savefilename.replace('.coffea', '_test.coffea')
-                    
+                
+                
                 
                 # run using futures executor
                 if not args.dask:
@@ -274,6 +347,7 @@ if __name__ == "__main__":
                                                              noSyst=args.noSyst,
                                                              deepAK8Cut=args.ttagWP,
                                                              useDeepAK8=useDeepAK8,
+                            
                                                              useDeepCSV=useDeepCSV,
                                                              htCut=htCut,
                                                              anacats=anacats,

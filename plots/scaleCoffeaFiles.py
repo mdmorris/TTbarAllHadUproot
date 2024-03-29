@@ -18,10 +18,9 @@ import time
 sys.path.append('../python/')
 import functions
 
-functions.makeSaveDirectories()
 
 
-label_map = functions.getLabelMap()
+label_map = functions.getLabelMap(coffea_dir='../outputs/plot_3d/')
 label_to_int = {label: i for i, label in label_map.items()}
 signal_cats = [ i for label, i in label_to_int.items() if '2t' in label]
 pretag_cats = [ i for label, i in label_to_int.items() if 'pre' in label]
@@ -61,11 +60,11 @@ for IOV in IOVs:
         'QCD',
         'TTbar', 
         'JetHT', 
-        'RSGluon', 
-        'ZPrime1', 
+        'RSGluon',  
         'ZPrime10', 
         'ZPrime30', 
-        'ZPrimeDM'
+        'ZPrimeDM',
+        'ZPrime1'
     ]
     
 
@@ -80,8 +79,14 @@ for IOV in IOVs:
     lumifactor = 0.1 if blind else 1.0
     
     
+#     scaledir = 'outputs/tight_fixed/scale/'
+    
+#     outputdir = 'outputs/loosenottight/'
+    # outputdir = 'outputs/tight_jetid1_ak8pftrigger_plots/'
+    outputdir = 'outputs/plot_3d/'
 
-
+    scaledir = outputdir+'/scale/'
+    
     for ds in datasets:
 
 
@@ -99,8 +104,9 @@ for IOV in IOVs:
                 
                 
                 
-#                 filename = filename.replace('outputs/', 'local/history/loose/coffea/')
-                filename = filename.replace('outputs/', 'outputs/')
+                filename = filename.replace('outputs/', outputdir)
+
+
 
 
                 if 'JetHT' in ds and blind:
@@ -122,7 +128,7 @@ for IOV in IOVs:
                     
                     for key in file.keys():
 
-                        if 'hist' in str(type(file[key])):
+                        if 'hist' in str(type(file[key])) and not 'nocut' in key:
                             file[key] = file[key] * sf
 
                         elif 'accumulator' in str(type(file[key])):
@@ -135,13 +141,13 @@ for IOV in IOVs:
 
                     if 'RSGluon' in ds: 
 
-                        util.save(file, f'../outputs/scale/{ds}{s}_{IOV}{blind_str}.coffea')
-                        print(f'saving ../outputs/scale/{ds}{s}_{IOV}{blind_str}.coffea')
+                        util.save(file, f'../{scaledir}{ds}{s}_{IOV}{blind_str}.coffea')
+                        print(f'saving ../{scaledir}{ds}{s}_{IOV}{blind_str}.coffea')
 
                     elif 'ZPrime' in ds:
 
-                        util.save(file, f'../outputs/scale/ZPrime{s}_{ds.replace("ZPrime","")}_{IOV}{blind_str}.coffea')
-                        print(f'saving ../outputs/scale/ZPrime{s}_{ds.replace("ZPrime","")}_{IOV}{blind_str}.coffea')
+                        util.save(file, f'../{scaledir}ZPrime{s}_{ds.replace("ZPrime","")}_{IOV}{blind_str}.coffea')
+                        print(f'saving ../{scaledir}ZPrime{s}_{ds.replace("ZPrime","")}_{IOV}{blind_str}.coffea')
 
 
             if 'RSGluon' not in ds and 'ZPrime' not in ds:
@@ -151,20 +157,22 @@ for IOV in IOVs:
                 for f in files[1:]:
                     for key in file.keys():
 
-                        if 'hist' in str(type(file[key])):
+                        if 'hist' in str(type(file[key])) and not 'nocut' in key:
                             file[key] = file[key] + f[key]
                             
                         elif 'accumulator' in str(type(file[key])):
                             for cut in f[key].keys():
                                 f[key][cut] = f[key][cut] + file[key][cut]
 
-                savefilename = f'../outputs/scale/{ds}_{IOV}{bkgest_str}{blind_str}.coffea'
+                savefilename = f'../{scaledir}{ds}_{IOV}{bkgest_str}{blind_str}.coffea'
                 util.save(file, savefilename)
                 print(f'saving {savefilename}')
 
         except:
 
             filename = coffeafiles[ds][filetype][IOV]
+            filename = filename.replace('outputs/', outputdir)
+
             original_file = util.load(filename)
             file = copy.deepcopy(original_file)
 
@@ -185,7 +193,7 @@ for IOV in IOVs:
 
                         file[key][cut] = file[key][cut] * sf_events
 
-            savefilename = f'../outputs/scale/{ds}_{IOV}{bkgest_str}{blind_str}.coffea'
+            savefilename = f'../{scaledir}{ds}_{IOV}{bkgest_str}{blind_str}.coffea'
             util.save(file, savefilename)
             print(f'saving {savefilename}')
 
@@ -219,16 +227,19 @@ if year=='2016APV':
 
         files = []
         for IOV in IOVs:
+            
 
-            file = util.load(f'../outputs/scale/{ds}_{IOV}{bkgest_str}.coffea')
+            file = util.load(f'../{scaledir}{ds}_{IOV}{bkgest_str}.coffea')
             files.append(file)
+            
+        
 
 
         file = files[0]
         for f in files[1:]:
             for key in file.keys():
 
-                if 'hist' in str(type(file[key])):
+                if 'hist' in str(type(file[key])) and not 'nocut' in key:
 
                     file[key] = file[key] + f[key]
 
@@ -236,7 +247,7 @@ if year=='2016APV':
                     for cut in f[key].keys():
                         f[key][cut] = f[key][cut] + file[key][cut]  
 
-        savefilename = f'../outputs/scale/{ds}_2016all{bkgest_str}.coffea'
+        savefilename = f'../{scaledir}{ds}_2016all{bkgest_str}.coffea'
         util.save(file, savefilename)
         print(f'saving {savefilename}')
 

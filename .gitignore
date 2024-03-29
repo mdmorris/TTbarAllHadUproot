@@ -1,3 +1,17 @@
 *.root
 *.pyc
 *.log
+*.png
+*.pdf
+*.coffea
+*.root
+.Trash-48850/
+.bashrc
+.condor_config
+.env/
+.ipynb_checkpoints/
+.ipython/
+.local/
+.nfs000000058fd26383000002e0
+*_pycache_*
+

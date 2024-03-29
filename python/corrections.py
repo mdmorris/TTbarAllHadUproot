@@ -348,8 +348,8 @@ def getMETFilter(IOV, events):
                                   "HBHENoiseIsoFilter",
                                   "EcalDeadCellTriggerPrimitiveFilter",
                                   "BadPFMuonFilter",
-                                  "BadPFMuonDzFilter",
-                                  "hfNoisyHitsFilter",
+                                  # "BadPFMuonDzFilter",
+                                  # "hfNoisyHitsFilter",
                                   "eeBadScFilter",
                                   "ecalBadCalibFilter"],
                        '2018'   :["goodVertices",
@@ -358,8 +358,8 @@ def getMETFilter(IOV, events):
                                   "HBHENoiseIsoFilter",
                                   "EcalDeadCellTriggerPrimitiveFilter",
                                   "BadPFMuonFilter",
-                                  "BadPFMuonDzFilter",
-                                  "hfNoisyHitsFilter",
+                                  # "BadPFMuonDzFilter",
+                                  # "hfNoisyHitsFilter",
                                   "eeBadScFilter",
                                   "ecalBadCalibFilter"]}
     
@@ -394,5 +394,5 @@ def GetQ2weights(events):
             scales = events.LHEScaleWeight[:,[0,1,3,4,6,7]]
             q2Up = ak.max(scales,axis=1)
             q2Down = ak.min(scales,axis=1)
-     
+
     return q2Nom, q2Up, q2Down

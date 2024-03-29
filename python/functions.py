@@ -17,14 +17,14 @@ lumi = {
 
 t_BR = 0.6741
 ttbar_BR = 0.4544 #PDG 2019
-ttbar_xs1 = 831.76 * (0.09210) #pb For ttbar mass from 700 to 1000
-ttbar_xs2 = 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf
+ttbar_xs1 = 833.9 * (0.09210) # NNLO correction # pb For ttbar mass from 700 to 1000
+ttbar_xs2 = 833.9 * (0.02474) # NNLO corrections # pb For ttbar mass from 1000 to Inf
 toptag_sf = 0.9
 toptag_kf = 1.0 #0.7
 qcd_xs = 1370.0 #pb From https://cms-gen-dev.cern.ch/xsdb
 
-ttbar_xs = {'700to1000': 831.76 * (0.09210), #pb For ttbar mass from 700 to 1000 # 65.49 in xsdb
-            '1000toInf': 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf # 16.36 in xsdb
+ttbar_xs = {'700to1000': 833.9 * (0.09210), #pb For ttbar mass from 700 to 1000 # 65.49 in xsdb
+            '1000toInf': 833.9 * (0.02474) #pb For ttbar mass from 1000 to Inf # 16.36 in xsdb
            }
 
 # zprimeDM_xs = {
@@ -156,9 +156,9 @@ xs = {
 
     
 
-def getLabelMap():
+def getLabelMap(coffea_dir='outputs/'):
     
-    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/'
+    # coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/'
     coffea_file = max(glob.glob(coffea_dir+'*.coffea'), key=os.path.getctime)
     label_map = util.load(coffea_file)['analysisCategories']
     
@@ -272,7 +272,7 @@ def getHist(hname, ds, bkgest, year, sum_axes=['anacat'], integrate_axes={}):
 
 
 
-def getHist2(hname, ds, year, sum_axes=['anacat'], integrate_axes={}, tag=''):
+def getHist2(hname, ds, year, sum_axes=['anacat'], integrate_axes={}, tag='', coffea_dir='/srv/outputs/tight_jetid1_ak8pftrigger/scale/'):
     
     ######################################################################################
     # hname = histogram name (example: 'ttbarmass')                                      #
@@ -283,10 +283,12 @@ def getHist2(hname, ds, year, sum_axes=['anacat'], integrate_axes={}, tag=''):
     # tag = string on end of file (ie _bkgest or _test)                                  #
     ######################################################################################    
     
-    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/scale/'
-    
+#     coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/scale/'
+
     # examples: outputs/scale/TTbar_2016.coffea, outputs/scale/QCD_2016all.coffea
     filename = coffea_dir + ds + '_' + year + tag + '.coffea'
+
+    # print('functions.getHist2 filename', filename)
     
     output = util.load(filename)
     
@@ -332,91 +334,96 @@ def plotBackgroundEstimate(hdata, hntmj, httbar, year, text=''):
     
 
     
-def makeSaveDirectories():
+def makeSaveDirectories(coffea_dir='outputs/'):
     
         
-    plots_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/plots'
-    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs'
+    # plots_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/plots'
+    # coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs'
    
-        
+
+    print('coffea dir', coffea_dir)
+    plots_dir = coffea_dir.replace('outputs','images').replace('scale','').replace('../','')
+
+    print('plots dir', plots_dir)
+    
     directories = [
         
         # output coffea and root files
-        coffea_dir+'/scale',
-        coffea_dir+'/twodalphabet',
-        coffea_dir+'/tight',
-        coffea_dir+'/medium',
-        coffea_dir+'/loose',
+        # coffea_dir+'/scale',
+        # coffea_dir+'/twodalphabet',
+        # coffea_dir+'/tight',
+        # coffea_dir+'/medium',
+        # coffea_dir+'/loose',
 
         # Closure test
-        plots_dir+'/images/png/closureTest/2016all',
-        plots_dir+'/images/png/closureTest/2016APV',
-        plots_dir+'/images/png/closureTest/2016',
-        plots_dir+'/images/png/closureTest/2017',
-        plots_dir+'/images/png/closureTest/2018',
-        plots_dir+'/images/png/closureTest/all',
-        plots_dir+'/images/pdf/closureTest/2016all',
-        plots_dir+'/images/pdf/closureTest/2016APV',
-        plots_dir+'/images/pdf/closureTest/2016',
-        plots_dir+'/images/pdf/closureTest/2017',
-        plots_dir+'/images/pdf/closureTest/2018',
-        plots_dir+'/images/pdf/closureTest/all',
+        plots_dir+'/png/closureTest/2016all',
+        plots_dir+'/png/closureTest/2016APV',
+        plots_dir+'/png/closureTest/2016',
+        plots_dir+'/png/closureTest/2017',
+        plots_dir+'/png/closureTest/2018',
+        plots_dir+'/png/closureTest/all',
+        plots_dir+'/pdf/closureTest/2016all',
+        plots_dir+'/pdf/closureTest/2016APV',
+        plots_dir+'/pdf/closureTest/2016',
+        plots_dir+'/pdf/closureTest/2017',
+        plots_dir+'/pdf/closureTest/2018',
+        plots_dir+'/pdf/closureTest/all',
 
         # systematics
-        plots_dir+'/images/png/systematics/2016all',
-        plots_dir+'/images/png/systematics/2016APV',
-        plots_dir+'/images/png/systematics/2016',
-        plots_dir+'/images/png/systematics/2017',
-        plots_dir+'/images/png/systematics/2018',
-        plots_dir+'/images/png/systematics/all',
-        plots_dir+'/images/pdf/systematics/2016all',
-        plots_dir+'/images/pdf/systematics/2016APV',
-        plots_dir+'/images/pdf/systematics/2016',
-        plots_dir+'/images/pdf/systematics/2017',
-        plots_dir+'/images/pdf/systematics/2018',
-        plots_dir+'/images/pdf/systematics/all',
+        plots_dir+'/png/systematics/2016all',
+        plots_dir+'/png/systematics/2016APV',
+        plots_dir+'/png/systematics/2016',
+        plots_dir+'/png/systematics/2017',
+        plots_dir+'/png/systematics/2018',
+        plots_dir+'/png/systematics/all',
+        plots_dir+'/pdf/systematics/2016all',
+        plots_dir+'/pdf/systematics/2016APV',
+        plots_dir+'/pdf/systematics/2016',
+        plots_dir+'/pdf/systematics/2017',
+        plots_dir+'/pdf/systematics/2018',
+        plots_dir+'/pdf/systematics/all',
         
         # systematics checks
-        plots_dir+'/images/png/systematics_checks/2016all',
-        plots_dir+'/images/png/systematics_checks/2016APV',
-        plots_dir+'/images/png/systematics_checks/2016',
-        plots_dir+'/images/png/systematics_checks/2017',
-        plots_dir+'/images/png/systematics_checks/2018',
-        plots_dir+'/images/png/systematics_checks/all',
-        plots_dir+'/images/pdf/systematics_checks/2016all',
-        plots_dir+'/images/pdf/systematics_checks/2016APV',
-        plots_dir+'/images/pdf/systematics_checks/2016',
-        plots_dir+'/images/pdf/systematics_checks/2017',
-        plots_dir+'/images/pdf/systematics_checks/2018',
-        plots_dir+'/images/pdf/systematics_checks/all',
+        plots_dir+'/png/systematics_checks/2016all',
+        plots_dir+'/png/systematics_checks/2016APV',
+        plots_dir+'/png/systematics_checks/2016',
+        plots_dir+'/png/systematics_checks/2017',
+        plots_dir+'/png/systematics_checks/2018',
+        plots_dir+'/png/systematics_checks/all',
+        plots_dir+'/pdf/systematics_checks/2016all',
+        plots_dir+'/pdf/systematics_checks/2016APV',
+        plots_dir+'/pdf/systematics_checks/2016',
+        plots_dir+'/pdf/systematics_checks/2017',
+        plots_dir+'/pdf/systematics_checks/2018',
+        plots_dir+'/pdf/systematics_checks/all',
         
         # ttbarmass
-        plots_dir+'/images/png/ttbarmass/2016all',
-        plots_dir+'/images/png/ttbarmass/2016APV',
-        plots_dir+'/images/png/ttbarmass/2016',
-        plots_dir+'/images/png/ttbarmass/2017',
-        plots_dir+'/images/png/ttbarmass/2018',
-        plots_dir+'/images/png/ttbarmass/all',
-        plots_dir+'/images/pdf/ttbarmass/2016all',
-        plots_dir+'/images/pdf/ttbarmass/2016APV',
-        plots_dir+'/images/pdf/ttbarmass/2016',
-        plots_dir+'/images/pdf/ttbarmass/2017',
-        plots_dir+'/images/pdf/ttbarmass/2018',
-        plots_dir+'/images/pdf/ttbarmass/all',
+        plots_dir+'/png/ttbarmass/2016all',
+        plots_dir+'/png/ttbarmass/2016APV',
+        plots_dir+'/png/ttbarmass/2016',
+        plots_dir+'/png/ttbarmass/2017',
+        plots_dir+'/png/ttbarmass/2018',
+        plots_dir+'/png/ttbarmass/all',
+        plots_dir+'/pdf/ttbarmass/2016all',
+        plots_dir+'/pdf/ttbarmass/2016APV',
+        plots_dir+'/pdf/ttbarmass/2016',
+        plots_dir+'/pdf/ttbarmass/2017',
+        plots_dir+'/pdf/ttbarmass/2018',
+        plots_dir+'/pdf/ttbarmass/all',
         
         # kinematics plots
-        plots_dir+'/images/png/kinematics/2016all',
-        plots_dir+'/images/png/kinematics/2016APV',
-        plots_dir+'/images/png/kinematics/2016',
-        plots_dir+'/images/png/kinematics/2017',
-        plots_dir+'/images/png/kinematics/2018',
-        plots_dir+'/images/png/kinematics/all',
-        plots_dir+'/images/pdf/kinematics/2016all',
-        plots_dir+'/images/pdf/kinematics/2016APV',
-        plots_dir+'/images/pdf/kinematics/2016',
-        plots_dir+'/images/pdf/kinematics/2017',
-        plots_dir+'/images/pdf/kinematics/2018',
-        plots_dir+'/images/pdf/kinematics/all',
+        plots_dir+'/png/kinematics/2016all',
+        plots_dir+'/png/kinematics/2016APV',
+        plots_dir+'/png/kinematics/2016',
+        plots_dir+'/png/kinematics/2017',
+        plots_dir+'/png/kinematics/2018',
+        plots_dir+'/png/kinematics/all',
+        plots_dir+'/pdf/kinematics/2016all',
+        plots_dir+'/pdf/kinematics/2016APV',
+        plots_dir+'/pdf/kinematics/2016',
+        plots_dir+'/pdf/kinematics/2017',
+        plots_dir+'/pdf/kinematics/2018',
+        plots_dir+'/pdf/kinematics/all',
         
     ]
 
@@ -442,7 +449,7 @@ def getCoffeaFilenames():
                     "C": coffea_dir+'JetHT_2016APVC.coffea',
                     "D": coffea_dir+'JetHT_2016APVD.coffea',
                     "E": coffea_dir+'JetHT_2016APVE.coffea',
-                    "E": coffea_dir+'JetHT_2016APVF.coffea'
+                    "F": coffea_dir+'JetHT_2016APVF.coffea'
                 },
                 "2016": {
                     "F": coffea_dir+'JetHT_2016F.coffea',
@@ -451,7 +458,7 @@ def getCoffeaFilenames():
 
                 },
                "2017": {
-                    "B": coffea_dir+'JetHT_2017C.coffea',
+                    "B": coffea_dir+'JetHT_2017B.coffea',
                     "C": coffea_dir+'JetHT_2017C.coffea',
                     "D": coffea_dir+'JetHT_2017D.coffea',
                     "E": coffea_dir+'JetHT_2017E.coffea',
@@ -470,7 +477,7 @@ def getCoffeaFilenames():
                     "C": coffea_dir+'JetHT_2016APVC_bkgest.coffea',
                     "D": coffea_dir+'JetHT_2016APVD_bkgest.coffea',
                     "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea',
-                    "E": coffea_dir+'JetHT_2016APVF_bkgest.coffea'
+                    "F": coffea_dir+'JetHT_2016APVF_bkgest.coffea'
                 },
                 "2016": {
                     "F": coffea_dir+'JetHT_2016F_bkgest.coffea',
@@ -479,7 +486,7 @@ def getCoffeaFilenames():
 
                 },
                 "2017": {
-                    "B": coffea_dir+'JetHT_2017C_bkgest.coffea',
+                    "B": coffea_dir+'JetHT_2017B_bkgest.coffea',
                     "C": coffea_dir+'JetHT_2017C_bkgest.coffea',
                     "D": coffea_dir+'JetHT_2017D_bkgest.coffea',
                     "E": coffea_dir+'JetHT_2017E_bkgest.coffea',
