@@ -19,9 +19,8 @@ import time
 sys.path.append('../python/')
 import functions
 
-# functions.makeSaveDirectories()
-# directory='../outputs/loosenottight/'
-directory='../outputs/tight_jetid1_ak8pftrigger/'
+
+directory='../outputs/an_v4_plots/'
 
 label_map = functions.getLabelMap(directory)
 label_to_int = {label: i for i, label in label_map.items()}
@@ -29,7 +28,6 @@ signal_cats = [ i for label, i in label_to_int.items() if '2t' in label]
 pretag_cats = [ i for label, i in label_to_int.items() if 'pre' in label]
 antitag_cats = [ i for label, i in label_to_int.items() if 'at' in label]
 
-plt.rcParams["font.size"] = 20
 
 
 
@@ -43,10 +41,10 @@ else:
 
     year = '2016all'
 
-systematics = ['nominal', 'jes', 'jer', 'pileup', 'pdf', 'q2', 'btag', 'prefiring']
+systematics = ['nominal', 'jes', 'jer', 'pileup', 'pdf', 'q2', 'prefiring']
 syst_labels = ['nominal']
 if '2018' in year: 
-    systematics = ['nominal', 'jes', 'jer', 'pileup', 'pdf', 'q2', 'btag']
+    systematics = ['nominal', 'jes', 'jer', 'pileup', 'pdf', 'q2']
 
 for s in systematics:
     if not 'nominal' in s and not 'hem' in s:
@@ -58,7 +56,6 @@ print(syst_labels)
 
 yearLabel = year.replace('20', '').replace('all','')
 
-imagesavedir = 'images/tight_jetid1_ak8pftrigger/png/'
 
 # tag = '_blind'
 tag = ''
@@ -72,14 +69,14 @@ if inclusive:
     
 else:
 
-    cats = ['', 'cen', 'fwd', '0bcen', '0bfwd', '1bcen', '1bfwd', '2bcen', '2bfwd']
-    cat_labels = ['', 'cen', 'fwd', 'cen0b', 'fwd0b', 'cen1b', 'fwd1b', 'cen2b', 'fwd2b']
+    # cats = ['', 'cen', 'fwd', '0bcen', '0bfwd', '1bcen', '1bfwd', '2bcen', '2bfwd']
+    # cat_labels = ['', 'cen', 'fwd', 'cen0b', 'fwd0b', 'cen1b', 'fwd1b', 'cen2b', 'fwd2b']
     
-#     cats = ['cen', 'fwd']
-#     cat_labels = ['cen', 'fwd']
+    cats = ['cen', 'fwd']
+    cat_labels = ['cen', 'fwd']
 
 signals = []
-signals = ['RSGluon2000', 'ZPrime2000_1', 'ZPrime2000_10', 'ZPrime2000_30', 'ZPrime2000_DM']
+# signals = ['RSGluon2000', 'ZPrime2000_1', 'ZPrime2000_10', 'ZPrime2000_30', 'ZPrime2000_DM']
 signals = ['RSGluon'+str(int(b*100)) for b in [10,15,20,25,30,35,40,45,50,55,60]]
 signals += ['ZPrime'+str(int(b*100))+'_10' for b in [10,12,14,16,18,20,25,30,35,40,45,50,60,70]]
 signals += ['ZPrime'+str(int(b*100))+'_30' for b in [10,12,14,16,18,20,25,30,35,40,45,50,60,70]]
@@ -149,21 +146,6 @@ for cat, catname in zip(cats, cat_labels):
             fdata["MttvsMt"+catname+yearLabel+"Pass"+systname] = hdata_pass
             fdata["MttvsMt"+catname+yearLabel+"Fail"+systname] = hdata_fail
 
-            fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
-            hep.hist2dplot(hdata_pass, ax=ax3, label='hdata_pass_'+systname)
-            hep.histplot(hdata_pass[{'jetmass':sum}], histtype='step', color='k', ax=ax1, label='hdata_pass_projy'+systname)
-            hep.histplot(hdata_pass[{'ttbarmass':sum}], histtype='step', color='k', ax=ax2, label='hdata_pass_projx'+systname)
-            plt.savefig(imagesavedir+'hdata_pass_'+catname+yearLabel+systname+'.png')
-            plt.close()
-            del fig, ax1
-            
-            fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
-            hep.hist2dplot(hdata_fail, color='k', ax=ax3, label='hdata_fail_'+systname)
-            hep.histplot(hdata_fail[{'jetmass':sum}], histtype='step', color='k', ax=ax1, label='hdata_fail_projy'+systname)
-            hep.histplot(hdata_fail[{'ttbarmass':sum}], histtype='step', color='k', ax=ax2, label='hdata_fail_projx'+systname)
-            plt.savefig(imagesavedir+'hdata_fail_'+catname+yearLabel+systname+'.png')
-            plt.close()
-            del fig, ax1
             
         if not dataOnly:
             
@@ -179,21 +161,6 @@ for cat, catname in zip(cats, cat_labels):
             fttbar["MttvsMt"+catname+yearLabel+"Pass"+systname] = httbar_pass
             fttbar["MttvsMt"+catname+yearLabel+"Fail"+systname] = httbar_fail
 
-            fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
-            hep.hist2dplot(httbar_pass, ax=ax3, label='httbar_pass_'+systname)
-            hep.histplot(httbar_pass[{'jetmass':sum}], histtype='step', color='k', ax=ax1, label='httbar_pass_projy'+systname)
-            hep.histplot(httbar_pass[{'ttbarmass':sum}], histtype='step', color='k', ax=ax2, label='httbar_pass_projx'+systname)
-            plt.savefig(imagesavedir+'httbar_pass_'+catname+yearLabel+systname+'.png')
-            plt.close()
-            del fig, ax1
-            
-            fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
-            hep.hist2dplot(httbar_fail, color='k', ax=ax3, label='httbar_fail_'+systname)
-            hep.histplot(httbar_fail[{'jetmass':sum}], histtype='step', color='k', ax=ax1, label='httbar_fail_projy'+systname)
-            hep.histplot(httbar_fail[{'ttbarmass':sum}], histtype='step', color='k', ax=ax2, label='httbar_fail_projx'+systname)
-            plt.savefig(imagesavedir+'httbar_fail_'+catname+yearLabel+systname+'.png')
-            plt.close()
-            del fig, ax1
             
             for i, file in enumerate(sigfiles):
 
@@ -201,21 +168,6 @@ for cat, catname in zip(cats, cat_labels):
                 file["MttvsMt"+catname+yearLabel+"Pass"+systname] = sig_pass[i]
                 file["MttvsMt"+catname+yearLabel+"Fail"+systname] = sig_fail[i]
 
-                fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
-                hep.hist2dplot(sig_pass[i], ax=ax3, label=signals[i]+'_pass_'+systname)
-                hep.histplot(sig_pass[i][{'jetmass':sum}], histtype='step', color='k', ax=ax1, label=signals[i]+'_pass_projy'+systname)
-                hep.histplot(sig_pass[i][{'ttbarmass':sum}], histtype='step', color='k', ax=ax2, label=signals[i]+'_pass_projx'+systname)
-                plt.savefig(imagesavedir+signals[i]+'_pass_'+catname+yearLabel+systname+'.png')
-                plt.close()
-                del fig, ax1
-                
-                fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
-                hep.hist2dplot(sig_fail[i], color='k', ax=ax3, label=signals[i]+'fail_'+systname)
-                hep.histplot(sig_fail[i][{'jetmass':sum}], histtype='step', color='k', ax=ax1, label=signals[i]+'_fail_projy'+systname)
-                hep.histplot(sig_fail[i][{'ttbarmass':sum}], histtype='step', color='k', ax=ax2, label=signals[i]+'_fail_projx'+systname)
-                plt.savefig(imagesavedir+signals[i]+'_fail_'+catname+yearLabel+systname+'.png')
-                plt.close()
-                del fig, ax1
     
                     
 

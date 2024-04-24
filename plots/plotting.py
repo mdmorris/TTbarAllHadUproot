@@ -11,6 +11,7 @@ import itertools
 import os, sys
 import glob
 import copy
+from hist import intervals
 from scipy.optimize import curve_fit
 import uproot
 
@@ -30,7 +31,7 @@ if (len(sys.argv) > 1) and (sys.argv[1] in ['2016', '2016APV', '2016all', '2017'
 
 else:
     
-    IOV = '2016'
+    IOV = '2016all'
 
     
 print(IOV, type(IOV))
@@ -45,15 +46,18 @@ rsgluon_xs = functions.rsgluon_xs
 
 # initialize
 
+savedirstring='an_v4_plots'
+savedir='../outputs/'+savedirstring+'/'
+
 
 print('making images')
-functions.makeSaveDirectories(coffea_dir='../outputs/tight_jetid1_ak8pftrigger/')
+functions.makeSaveDirectories(coffea_dir=savedir)
 
 
 blind = False
 lumifactor = 0.1 if blind else 1.0
 
-label_map = functions.getLabelMap(coffea_dir='../outputs/tight_jetid1_ak8pftrigger/')
+label_map = functions.getLabelMap(coffea_dir=savedir)
 label_to_int = {label: i for i, label in label_map.items()}
 
 signal_cats = [ i for label, i in label_to_int.items() if '2t' in label]
@@ -688,224 +692,326 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
     
 
     hists = [
-        'jeteta',
-        'jetphi',
-        'ttbarmass',
-        'jetmass',
-        'jetmsd',
+        # 'jetpt',
+        # 'jetpt1',
+        # 'jety',
+        # 'jety1',
+        # 'jeteta',
+        # 'jetphi',
+        # 'jeteta1',
+        # 'jetphi1',
+        # 'ttbarmass',
+        # 'jetmass',
+        # 'jetmsd',
+        # 'jetmass1',
+        # 'jetmsd1',
         'ht'
     ]
 
-    for histname in hists:
-        
-        coffea_dir = f'../outputs/{dirstring}/'
-        
-        fttbar = util.load(coffea_dir+'/scale/TTbar_'+IOV+'.coffea')
-        fqcd = util.load(coffea_dir+'/scale/QCD_'+IOV+'.coffea')
-        fdata = util.load(coffea_dir+'/scale/JetHT_'+IOV+'.coffea')
-        fsig = util.load(coffea_dir+'/scale/RSGluon2000_'+IOV+'.coffea')
-        
-        
-        # h_ht = fttbar['jetpt']
-        h_ttbar = fttbar[histname][{'systematic':'nominal'}][{'anacat':sum}]
-        h_qcd = fqcd[histname][{'systematic':'nominal'}][{'anacat':sum}]
-        
-        h_data = fdata[histname][{'systematic':'nominal'}][{'anacat':sum}]
-        
-        h_bkg = (h_qcd + h_ttbar)
-        
-        h_sig = fsig[histname][{'systematic':'nominal'}][{'anacat':sum}]
-        
-        
-        nomvals = fttbar[histname][{'systematic':'nominal'}][{'anacat':sum}].values()
-        systUp2 = np.zeros_like(nomvals)
-        systDn2 = np.zeros_like(nomvals)
+
+    regions = [
+        'inclusive',
+        # 'cenPass',
+        # 'cenFail',
+        # 'fwdPass',
+        # 'fwdFail'
+    ]
+
+    for catname in regions:
+
+        for histname in hists:
+            
+            coffea_dir = f'../outputs/{dirstring}/'
+            
+            fttbar = util.load(coffea_dir+'/scale/TTbar_'+IOV+'.coffea')
+            fqcd = util.load(coffea_dir+'/scale/QCD_'+IOV+'.coffea')
+            fdata = util.load(coffea_dir+'/scale/JetHT_'+IOV+'.coffea')
+            fsig = util.load(coffea_dir+'/scale/RSGluon2000_'+IOV+'.coffea')
     
     
-            # rebinning and axes
+            integrate_axes = {'systematic':'nominal'}
+    
+            if 'cen' in catname:
+                if 'Pass' in catname:
+                    integrate_axes = {'systematic':'nominal', 'anacat':signal_cen_cats}
+                elif 'Fail' in catname:
+                    integrate_axes = {'systematic':'nominal', 'anacat':antitag_cen_cats}
+            elif 'fwd' in catname:
+                if 'Pass' in catname:
+                    integrate_axes = {'systematic':'nominal', 'anacat':signal_fwd_cats}
+                elif 'Fail' in catname:
+                    integrate_axes = {'systematic':'nominal', 'anacat':antitag_fwd_cats}
     
     
-    
-        # h_bkg = h_bkg
-        # h_ttbar = h_ttbar
-        # h_data = h_data
-        # h_sig = h_sig
-        # h_qcd = h_qcd
-    
-    
-    
-    
+
+
+            print(integrate_axes)
+            
+            
+            h_ttbar = fttbar[histname][integrate_axes][{'anacat':sum}]
+
+            h_qcd = fqcd[histname][integrate_axes][{'anacat':sum}]
+            
+            h_data = fdata[histname][integrate_axes][{'anacat':sum}]
+            
+            h_bkg = (h_qcd + h_ttbar)
+            
+            h_sig = fsig[histname][integrate_axes][{'anacat':sum}]
+            
+            
+            
         
-        for syst in fttbar[histname].axes['systematic']:
+        
+        
+
+
+            if 'ttbarmass' in histname or 'jetmass' in histname:
+        
+                h_bkg = h_bkg[::3j]
+                h_ttbar = h_ttbar[::3j]
+                h_data = h_data[::3j]
+                h_sig = h_sig[::3j]
+                h_qcd = h_qcd[::3j]
+        
+        
             nomvals = h_ttbar.values()
+            systUp2 = np.zeros_like(nomvals)
+            systDn2 = np.zeros_like(nomvals)
         
-            if 'Up' in syst:
-                systvals = np.where(fttbar[histname][{'systematic':syst}][{'anacat':sum}].values()[0] > 0, fttbar[histname][{'systematic':syst}][{'anacat':sum}].values() - nomvals, 0) 
-                systUp2 = systUp2 + systvals * systvals
-            if 'Down' in syst:
-                systvals = np.where(fttbar[histname][{'systematic':syst}][{'anacat':sum}].values()[0] > 0, fttbar[histname][{'systematic':syst}][{'anacat':sum}].values() - nomvals, 0) 
-                systDn2 = systDn2 + systvals * systvals
+            
+            for syst in fttbar[histname].axes['systematic']:
+
+                integrate_axes['systematic'] = syst
+                
+                nomvals = h_ttbar.values()
+
+                if 'ttbarmass' in histname or 'jetmass' in histname:
+                    httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}][::3j]
+                    hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}][::3j]
+                else:
+                    httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}]
+                    hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}]
+            
+                if 'Up' in syst:
+
+                    
+                    systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
+                    systUp2 = systUp2 + systvals * systvals
+                if 'Down' in syst:
+                    systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
+                    systDn2 = systDn2 + systvals * systvals
+            
+            for syst in fqcd[histname].axes['systematic']:
+                nomvals = h_qcd.values()
+            
+                if 'Up' in syst:
+                    systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - nomvals, 0) 
+                    systUp2 = systUp2 + systvals * systvals
+                if 'Down' in syst:
+                    systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - nomvals, 0) 
+                    systDn2 = systDn2 + systvals * systvals
+            
+            
+            systUp = np.sqrt(systUp2)
+            systDn = np.sqrt(systDn2)
+
+            # stat uncertainties
+            # print(intervals.poisson_interval(h_ttbar.values()**2, variances = None, coverage = 0.68))
+            # print('nomvals', h_bkg.values())
         
-        for syst in fqcd[histname].axes['systematic']:
-            # nomvals = fqcd[histname][{'systematic':'nominal'}][{'anacat':sum}].values()
-            nomvals = h_qcd.values()
-        
-            if 'Up' in syst:
-                systvals = np.where(fqcd[histname][{'systematic':syst}][{'anacat':sum}].values()[0] > 0, fqcd[histname][{'systematic':syst}][{'anacat':sum}].values() - nomvals, 0) 
-                systUp2 = systUp2 + systvals * systvals
-            if 'Down' in syst:
-                systvals = np.where(fqcd[histname][{'systematic':syst}][{'anacat':sum}].values()[0] > 0, fqcd[histname][{'systematic':syst}][{'anacat':sum}].values() - nomvals, 0) 
-                systDn2 = systDn2 + systvals * systvals
-        
-        
-        systUp = np.sqrt(systUp2)
-        systDn = np.sqrt(systDn2)
-        
-        
-        
-        fig, (ax1, ax2) = plt.subplots(nrows=2, height_ratios=[3, 1], sharex=True)
-        # fig, ax1 = plt.subplots(nrows=2, )
-        
-        
-        text=''
-    
-    
-        
-        
-        hep.cms.label('Work In Progress', data=True, lumi='{0:0.1f}'.format(lumi[IOV]/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
-        hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
-        hep.histplot(h_bkg, density=False, histtype='fill', color='xkcd:pale gold', label='SM QCD', ax=ax1)
-        hep.histplot(h_ttbar, density=False, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
-        hep.histplot(h_data, density=False, histtype='errorbar', color='black', label='Data', ax=ax1)
-        hep.histplot(h_sig, density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
-    
-    
-        if 'jetmsd' in histname:
-            edges = h_ttbar.axes['jetmass'].edges
-        else:
-            edges = h_ttbar.axes[histname].edges
-    
-        height = systUp + systDn
-        bottom = h_bkg.values() - systDn
-        
-        
-        
-        ax1.bar(x = edges[:-1],
-                   height=height,
-                   bottom=bottom,
-                   width = np.diff(edges), align='edge', hatch='///', edgecolor='gray',
-                   linewidth=0, facecolor='none', alpha=0.8,
-                   zorder=10, label='Syst. Unc.')
-        
-        
-        ax2.bar(x = edges[:-1],
-                   height=height/h_bkg.values(),
-                   bottom=bottom/h_bkg.values(),
-                   width = np.diff(edges), align='edge',
-                   linewidth=0, facecolor='lightgrey', alpha=0.8,
-                   zorder=0, label='Syst. Unc.')
-        ax2.axhline(1, color='black', ls='--')
-        
-        hep.histplot(h_data/h_bkg.values(), density=False, histtype='errorbar', color='black', ax=ax2)
-        
-        
-        
-        
-        # print((h_data/h_bkg.values()).values())
-        # print(np.average((h_data/h_bkg.values()).values()))
-        
-        # ax2.bar(x = edges[:-1],
-        #            height=1.5,
-        #            bottom=0.5,
-        #            width = np.diff(edges), align='edge', edgecolor='gray',
-        #            linewidth=0, facecolor='gray', alpha=0.8,
-        #            zorder=10, label='Syst. Unc.')
-        
-    
-        
-        # elif 'jetphi' in histname:
-        #     plt.savefig('jetphi_'+IOV+'.pdf')
-    
-    
-        if 'jetmass' in histname:
-            ax1.set_xlim(25,500)
-            ax2.set_xlim(25,500)
-            ax1.set_xlabel('Jet mass [GeV]')
-    
-        elif 'jetmsd' in histname:
-            ax1.set_xlim(25,500)
-            ax2.set_xlim(25,500)   
-    
-        elif 'ttbarmass' in histname:
-            ax1.set_xlim(800,6800)
-            ax2.set_xlim(800,6800)
-    
-    
-        
-        elif 'jetpt' in histname:
-            ax1.set_xlim(400,2000)
-            ax2.set_xlim(400,2000)
-        
-        
-        elif 'ht' in histname:
-            ax1.set_xlim(500,4500)
-            ax2.set_xlim(500,4500)
-        
-        elif 'jeteta' in histname:
-            ax1.set_xlim(-2.4,2.4)
-            ax2.set_xlim(-2.4,2.4)
-    
-        elif 'jetphi' in histname:
-            ax1.set_xlim(-3,3)
-            ax2.set_xlim(-3,3)
-        
-        
-        ax1.set_ylim(1e-1, 1e7)
-        ax2.set_ylim(1-0.5,1+0.5)
-        
-        
-        ax1.legend(loc=1, fontsize=10)
-        # plt.axvline(-1, color='darkred', ls='--')
-        # plt.axvline(1, color='darkred', ls='--')
-        # ax1.set_xlim(400,None)
-        ax1.set_yscale('log')
-        ax1.set_xlabel('')
-        
-        ax1.set_ylabel('Events/Bin')
-        ax2.set_ylabel('Data/MC')
-        
-        
-        savefigname = f'images/{dirstring}/png/kinematics/{IOV}/{histname}.png'
-        print('saving', savefigname)
-        plt.savefig(savefigname)
-        plt.savefig(savefigname.replace('png', 'pdf'))
+            systUp = systUp + np.sqrt(intervals.poisson_interval(h_ttbar.values(), variances = h_ttbar.variances(), coverage = 0.68)[1]   )
+            systUp = systUp + np.sqrt(intervals.poisson_interval(h_qcd.values(), variances = h_ttbar.variances(), coverage = 0.68)[1]     )
+            systDn = systDn + np.sqrt(intervals.poisson_interval(h_ttbar.values(), variances = h_qcd.variances(), coverage = 0.68)[0]     )
+            systDn = systDn + np.sqrt(intervals.poisson_interval(h_qcd.values(), variances = h_qcd.variances(), coverage = 0.68)[0]       )
+                               
+            #systUp = systUp + (np.sqrt(h_bkg.values())
+            #systDn = systDn + (np.sqrt(h_bkg.values()))
+            
+            # print(systUp)
+            # print(nomvals)
+            # print(systDn)
+
+            
+            # for i in range(len(nomvals)):
+                # print(systDn[i], nomvals[i], systUp[i])
+                # print(systDn[i] + np.sqrt(nomvals[i]), nomvals[i], systUp[i] + np.sqrt(nomvals[i]))
+                # print()
 
 
-plotKinematics(IOV, dataset='TTbar', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV,  dataset='RSGluon2000', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime2000_1', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime2000_10', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime2000_30', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime2000_DM', dirstring='tight_jetid1_ak8pftrigger')   
-# plotKinematics(IOV, dataset='RSGluon4000', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime4000_1', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime4000_10', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime4000_30', dirstring='tight_jetid1_ak8pftrigger')
-# plotKinematics(IOV, dataset='ZPrime4000_DM', dirstring='tight_jetid1_ak8pftrigger')   
-      
+            
+            
+            # fig, ax1 = plt.subplots(nrows=2, )
 
-# plotSystematics(IOV, dataset='QCD', dirstring='tight_jetid1_ak8pftrigger')
-# plotSystematics(IOV, dataset='TTbar', dirstring='tight_jetid1_ak8pftrigger')
-# plotSystematics(IOV, dataset='RSGluon2000', dirstring='tight_jetid1_ak8pftrigger')
-# plotSystematics(IOV, dataset='ZPrime2000_1', dirstring='tight_jetid1_ak8pftrigger')
-# plotSystematics(IOV, dataset='ZPrime2000_10', dirstring='tight_jetid1_ak8pftrigger')
-# plotSystematics(IOV, dataset='ZPrime2000_30', dirstring='tight_jetid1_ak8pftrigger')
-# plotSystematics(IOV, dataset='ZPrime2000_DM', dirstring='tight_jetid1_ak8pftrigger')
 
-# plotSystematics(IOV, dataset='QCD')
+            if histname == 'ht':
+                fig, ax1 = plt.subplots(nrows=1)
+            else:        
+                fig, (ax1, ax2) = plt.subplots(nrows=2, height_ratios=[3, 1], sharex=True)
 
-# plotClosureTest()
-# plotClosureTestQCD()
-# plotMtt()
+                
+                
+            
+            text = ''
+            if 'cen' in catname:
+                text=r'$\bf{central}$'
+            elif 'fwd' in catname:
+                text=r'$\bf{forward}$'
+            
+        
+        
+            
+            
+            hep.cms.label('Work In Progress', data=True, lumi='{0:0.1f}'.format(lumi[IOV]/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
+            hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
+
+            if '2016all' in IOV:
+                h_bkg = h_qcd*1.5 + h_ttbar
+
+
+
+            if histname == 'ht':
+
+                
+                hep.histplot(h_ttbar, density=False, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
+                hep.histplot(h_sig, density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
+
+
+                ax1.legend(loc=1, fontsize=10)
+                ax1.set_yscale('log')
+                ax1.set_ylabel('Events/Bin')
+    
+                ax1.set_ylim(1e-1, 1e4)
+                ax1.set_xlim(400, 4400)
+                
+                savefigname = f'images/{dirstring}/png/kinematics/{IOV}/{histname}_{catname}.png'
+                print('saving', savefigname)
+                plt.savefig(savefigname)
+                plt.savefig(savefigname.replace('png', 'pdf'))
+
+            
+
+            else:
+
+                hep.histplot(h_bkg, density=False, histtype='fill', color='xkcd:pale gold', label='SM QCD', ax=ax1)
+                hep.histplot(h_ttbar, density=False, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
+                hep.histplot(h_data, density=False, histtype='errorbar', color='black', label='Data', ax=ax1)
+                hep.histplot(h_sig, density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
+
+            
+            
+                if 'jetmsd' in histname:
+                    edges = h_ttbar.axes['jetmass'].edges
+                else:
+                    edges = h_ttbar.axes[histname.replace('1','')].edges
+            
+                height = systUp + systDn
+                bottom = h_bkg.values() - systDn
+                
+                
+                
+                ax1.bar(x = edges[:-1],
+                           height=height,
+                           bottom=bottom,
+                           width = np.diff(edges), align='edge', hatch='///', edgecolor='gray',
+                           linewidth=0, facecolor='none', alpha=0.8,
+                           zorder=10, label='Unc.')
+                
+                
+                ax2.bar(x = edges[:-1],
+                           height=height/h_bkg.values(),
+                           bottom=bottom/h_bkg.values(),
+                           width = np.diff(edges), align='edge',
+                           linewidth=0, facecolor='lightgrey', alpha=0.8,
+                           zorder=0, label='Unc.')
+                ax2.axhline(1, color='black', ls='--')
+                
+                hep.histplot(h_data/h_bkg.values(), density=False, histtype='errorbar', color='black', ax=ax2)
+                
+                
+                
+                
+                # print((h_data/h_bkg.values()).values())
+                # print(np.average((h_data/h_bkg.values()).values()))
+                
+                # ax2.bar(x = edges[:-1],
+                #            height=1.5,
+                #            bottom=0.5,
+                #            width = np.diff(edges), align='edge', edgecolor='gray',
+                #            linewidth=0, facecolor='gray', alpha=0.8,
+                #            zorder=10, label='Syst. Unc.')
+                
+            
+                
+                # elif 'jetphi' in histname:
+                #     plt.savefig('jetphi_'+IOV+'.pdf')
+            
+            
+                if 'jetmass' in histname:
+                    ax1.set_xlim(25,500)
+                    ax2.set_xlim(25,500)
+                    ax1.set_xlabel('Jet mass [GeV]')
+            
+                elif 'jetmsd' in histname:
+                    ax1.set_xlim(25,500)
+                    ax2.set_xlim(25,500)   
+            
+                elif 'ttbarmass' in histname:
+                    ax1.set_xlim(800,6800)
+                    ax2.set_xlim(800,6800)
+            
+            
+                
+                elif 'jetpt' in histname:
+                    ax1.set_xlim(400,2000)
+                    ax2.set_xlim(400,2000)
+                
+                
+                elif 'ht' in histname:
+                    ax1.set_xlim(500,4500)
+                    ax2.set_xlim(500,4500)
+                
+                elif 'jeteta' in histname:
+                    ax1.set_xlim(-2.4,2.4)
+                    ax2.set_xlim(-2.4,2.4)
+            
+                elif 'jetphi' in histname:
+                    ax1.set_xlim(-3,3)
+                    ax2.set_xlim(-3,3)
+                
+                
+                ax1.set_ylim(1e-1, 1e7)
+                ax2.set_ylim(1-1,1+1)
+                
+                
+                ax1.legend(loc=1, fontsize=10)
+                # plt.axvline(-1, color='darkred', ls='--')
+                # plt.axvline(1, color='darkred', ls='--')
+                # ax1.set_xlim(400,None)
+                ax1.set_yscale('log')
+                ax1.set_xlabel('')
+                
+                ax1.set_ylabel('Events/Bin')
+                ax2.set_ylabel('Data/MC')
+    
+    
+                if histname == 'jetmass':
+                    ax2.set_xlabel('Jet mass [GeV]')
+                
+                
+                savefigname = f'images/{dirstring}/png/kinematics/{IOV}/{histname}_{catname}.png'
+                print('saving', savefigname)
+                plt.savefig(savefigname)
+                plt.savefig(savefigname.replace('png', 'pdf'))
+
+
+plotKinematics(IOV, dataset='TTbar', dirstring=savedirstring)
+
+# plotSystematics(IOV, dataset='RSGluon5000', dirstring=savedirstring)
+# plotSystematics(IOV, dataset='RSGluon2000', dirstring=savedirstring)
+
+# plotSystematics(IOV, dataset='TTbar', dirstring=savedirstring)
+# plotSystematics(IOV, dataset='TTbar', dirstring=savedirstring)
+
+
 
    

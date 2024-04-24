@@ -18,9 +18,11 @@ import time
 sys.path.append('../python/')
 import functions
 
+outputdir = 'outputs/an_v4_plots/'
 
+scaledir = outputdir+'/scale/'
 
-label_map = functions.getLabelMap(coffea_dir='../outputs/plot_3d/')
+label_map = functions.getLabelMap(coffea_dir='../'+outputdir)
 label_to_int = {label: i for i, label in label_map.items()}
 signal_cats = [ i for label, i in label_to_int.items() if '2t' in label]
 pretag_cats = [ i for label, i in label_to_int.items() if 'pre' in label]
@@ -78,14 +80,8 @@ for IOV in IOVs:
 
     lumifactor = 0.1 if blind else 1.0
     
-    
-#     scaledir = 'outputs/tight_fixed/scale/'
-    
-#     outputdir = 'outputs/loosenottight/'
-    # outputdir = 'outputs/tight_jetid1_ak8pftrigger_plots/'
-    outputdir = 'outputs/plot_3d/'
 
-    scaledir = outputdir+'/scale/'
+
     
     for ds in datasets:
 

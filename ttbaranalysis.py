@@ -35,7 +35,7 @@ if __name__ == "__main__":
     
 
     # directory where output files are saved
-    savedir = f'outputs/testing/' 
+    savedir = f'outputs/an_v4_plots/' 
     
     parser = argparse.ArgumentParser(
                     prog='ttbaranalysis.py',
@@ -64,6 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('--blind', action='store_true', help='process 1/10th of the data')
     parser.add_argument('--bkgest', choices=['2dalphabet', 'mistag'], default=None)
     parser.add_argument('--toptagger', choices=['deepak8', 'cmsv2'], default='deepak8')
+    parser.add_argument('-r', '--redirector', default='root://cmsxrootd.fnal.gov/')
     parser.add_argument('--ttagWP', choices=['loose', 'medium', 'tight'], default='tight')
     parser.add_argument('--btagger', choices=['deepcsv', 'csvv2'], default='deepcsv')
     parser.add_argument('--ht', choices=['1400', '950'], default='1400')
@@ -133,8 +134,7 @@ if __name__ == "__main__":
         'jer',
         'pileup',
         'pdf',
-        'q2',
-        'btag',
+        'q2'
     ]
     
     if ('2016' in IOV) or ('2017' in IOV): systematics.append('prefiring')
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
      
     # make analysis categories 
-    ttagcats = ["at", "pret", "2t"]
+    ttagcats = ["at", "2t"]
     btagcats = ["0b", "1b", "2b"]
     ycats = ['cen', 'fwd']
     
@@ -173,19 +173,17 @@ if __name__ == "__main__":
     ##### root files #####
     if args.env == 'casa' or args.env == 'C': redirector = 'root://xcache/'
     elif args.env == 'winterfell' or args.env == 'W': redirector = '/mnt/data/cms/'
-    else: redirector = 'root://cmsxrootd.fnal.gov/' # default LPC
+    else: redirector = redirector = args.redirector #'root://cmsxrootd.fnal.gov/' # default LPC
 # #     redirector = 'root://xrootd-local.unl.edu:1094/'
 #     # redirector = 'root://cmseos.fnal.gov:1094/'
 #     redirector = 'root://cmseos.fnal.gov/'
-#     if args.signals:
-#         redirector = 'root://cmseos.fnal.gov/'
 
     
 
     # if ('2018' in IOV):
         # redirector = 'root://eoscms.cern.ch//eos/cms/'
         # redirector = 'root://xrootd-local.unl.edu:1094/'
-        # redirector = 'root://cmsxrootd.hep.wisc.edu:1094/'
+        # redirector = 'root://cmsxrootd.hep.wisc.edu:1094/' # Zprime1 2018
     # elif ('2017' in IOV):
         # redirector = 'root://cmsxrootd.hep.wisc.edu:1094/'
         # redirector = 'root://cms03.lcg.cscs.ch:1094/'
@@ -250,6 +248,12 @@ if __name__ == "__main__":
         # skipbadfiles = False if (('JetHT' in sample) or ('RSGluon' in sample) or ('ZPrime' in sample)) else True
         skipbadfiles = False
         #skipbadfiles = True
+
+        # if 'ZPrime' in sample and 'ZPrime1' != sample:
+        #         redirector = 'root://cmseos.fnal.gov/'
+        # if 'ZPrime1' in sample:
+        #         redirector = 'root://cmsxrootd.fnal.gov/'
+        #     redirector = 'root://cmsxrootd.hep.wisc.edu:1094/'
         
         inputfile = jsonfiles[sample]
         files = []
