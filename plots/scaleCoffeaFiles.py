@@ -18,7 +18,7 @@ import time
 sys.path.append('../python/')
 import functions
 
-outputdir = 'outputs/an_v4_plots/'
+outputdir = 'outputs/ttagSF/'
 
 scaledir = outputdir+'/scale/'
 
@@ -36,7 +36,7 @@ toc = time.time()
 
 
 
-if (len(sys.argv) > 1) and (sys.argv[1] in ['2016', '2016APV', '2017', '2018']):
+if (len(sys.argv) > 1) and (sys.argv[1] in ['2016', '2016APV', '2017', '2018', 'all']):
     
     year = sys.argv[1]
 
@@ -55,6 +55,8 @@ IOVs = [year]
 # ]
 
 for IOV in IOVs:
+
+    if IOV == 'all': continue
     
     coffeafiles = functions.getCoffeaFilenames()
 
@@ -196,7 +198,7 @@ for IOV in IOVs:
 
 if year=='2016APV':
     
-    print('combing 2016 and 2016noAPV')
+    print('combining 2016 and 2016noAPV')
     
     datasets = []
 
@@ -247,3 +249,64 @@ if year=='2016APV':
         util.save(file, savefilename)
         print(f'saving {savefilename}')
 
+
+if year=='all':
+    
+    print('combining all years')
+    
+    datasets = []
+
+    IOVs = ['2016', '2016APV', '2017', '2018']
+    datasets = [
+        'TTbar', 
+        'QCD', 
+        'JetHT'
+               ]
+
+
+    hasBkgEst = False
+    bkgest_str = '_bkgest' if hasBkgEst else ''
+
+
+    # add all signal samples
+    datasets += ['RSGluon'+str(int(b*100)) for b in [10,15,20,25,30,35,40,45,50,55,60]]
+    datasets += ['ZPrime'+str(int(b*100))+'_1' for b in [10,12,14,16,18,20,25,30,35,40,45]]
+    datasets += ['ZPrime'+str(int(b*100))+'_10' for b in [10,12,14,16,18,20,25,30,35,40,45,50,60,70]]
+    datasets += ['ZPrime'+str(int(b*100))+'_30' for b in [10,12,14,16,18,20,25,30,35,40,45,50,60,70]]
+    datasets += ['ZPrime'+str(int(b*100))+'_DM' for b in [10,15,20,25,30,35,40,45,50]]
+
+    for ds in datasets:
+
+        files = []
+        for IOV in IOVs:
+            
+
+            file = util.load(f'../{scaledir}{ds}_{IOV}{bkgest_str}.coffea')
+            files.append(file)
+            
+        
+
+        file = files[0]
+        for f in files[1:]:
+            for key in file.keys():
+
+                if 'deltaPhi' in key: continue
+
+                if 'hist' in str(type(file[key])) and not 'nocut' in key:
+
+                    if 'systematic' in file[key].axes.name:
+                        file[key] = file[key][{'systematic':'nominal'}] + f[key][{'systematic':'nominal'}]
+                    elif 'systematic' in f[key].axes.name:
+                        file[key] = file[key] + f[key][{'systematic':'nominal'}]
+                    else:
+                        file[key] = file[key] + f[key]
+                    # except:
+                    #     print(key, 'axes not mergable')
+
+                elif 'cutflow' in key:
+                    for cut in f[key].keys():
+                        f[key][cut] = f[key][cut] + file[key][cut]  
+
+        savefilename = f'../{scaledir}{ds}_all{bkgest_str}.coffea'
+        util.save(file, savefilename)
+        print(f'saving {savefilename}')

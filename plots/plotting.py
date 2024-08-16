@@ -43,10 +43,19 @@ print(lumi)
 rsgluon_xs = functions.rsgluon_xs
 
 
+plotred = 'red'
+plotyellow = 'yellow'
+
+
+# plotred = 'xkcd:deep red'
+# plotyellow = 'xkcd:pale gold'
+
+
+
 
 # initialize
 
-savedirstring='an_v4_plots'
+savedirstring='ttagSF'
 savedir='../outputs/'+savedirstring+'/'
 
 
@@ -191,7 +200,7 @@ def plotSystematics(IOV, dataset='TTbar', dirstring=''):
                 text = f'MC {dataset}\n{syst} systematic variations\n{btext}, {dytext}'
 
 
-            hep.cms.label('Preliminary', data=True, lumi='{0:0.1f}'.format(lumi[IOV]*lumifactor/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
+            hep.cms.label('Preliminary', data=True, lumi='{0:0.1f}'.format(lumi[IOV]*lumifactor/1000.), year=IOV.replace('all',''), loc=2, fontsize=20, ax=ax1)
             hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
 
@@ -314,8 +323,8 @@ def plotClosureTest():
     hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
     hep.histplot(hsig, histtype='errorbar', color='black', label='Data', ax=ax1)
-    hep.histplot(hbkg+httbar, histtype='fill', color='xkcd:pale gold', label='NTMJ Bkg Est', ax=ax1)
-    hep.histplot(httbar, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
+    hep.histplot(hbkg+httbar, histtype='fill', color=plotyellow, label='NTMJ Bkg Est', ax=ax1)
+    hep.histplot(httbar, histtype='fill', color=plotred, label='SM TTbar', ax=ax1)
 
     height = hUp.values() + hDn.values()
     bottom = hbkg.values() - hDn.values()
@@ -327,7 +336,7 @@ def plotClosureTest():
                bottom=bottom,
                width = np.diff(edges), align='edge', hatch='//////', edgecolor='gray',
                linewidth=0, facecolor='none', alpha=0.7,
-               zorder=10, label='Unc.')
+               zorder=10, label='Stat + Syst')
 
 
     ratio_plot =  hsig / hbkg.values()
@@ -340,7 +349,7 @@ def plotClosureTest():
                bottom=(np.ones_like(ratio_plot.values()) - ratioDn),
                width = np.diff(edges), align='edge', edgecolor='gray',
                linewidth=0, facecolor='gray', alpha=0.3,
-               zorder=10, label='Unc.')
+               zorder=10, label='Stat + Syst')
 
 
     ratio_plot =  hsig / hbkg.values()
@@ -431,8 +440,8 @@ def plotClosureTest():
         hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
         hep.histplot(hsig, histtype='errorbar', color='black', label='Data', ax=ax1)
-        hep.histplot(hbkg+httbar, histtype='fill', color='xkcd:pale gold', label='NTMJ Bkg Est', ax=ax1)
-        hep.histplot(httbar, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
+        hep.histplot(hbkg+httbar, histtype='fill', color=plotyellow, label='NTMJ Bkg Est', ax=ax1)
+        hep.histplot(httbar, histtype='fill', color=plotred, label='SM TTbar', ax=ax1)
 
         height = hUp.values() + hDn.values()
         bottom = hbkg.values() - hDn.values()
@@ -444,7 +453,7 @@ def plotClosureTest():
                    bottom=bottom,
                    width = np.diff(edges), align='edge', hatch='//////', edgecolor='gray',
                    linewidth=0, facecolor='none', alpha=0.7,
-                   zorder=10, label='Unc.')
+                   zorder=10, label='Stat + Syst')
 
 
         ratio_plot =  hsig / hbkg.values()
@@ -457,7 +466,7 @@ def plotClosureTest():
                    bottom=(np.ones_like(ratio_plot.values()) - ratioDn),
                    width = np.diff(edges), align='edge', edgecolor='gray',
                    linewidth=0, facecolor='gray', alpha=0.3,
-                   zorder=10, label='Unc.')
+                   zorder=10, label='Stat + Syst')
 
 
         ratio_plot =  hsig / hbkg.values()
@@ -523,7 +532,7 @@ def plotClosureTestQCD():
     hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
     hep.histplot(hsig, histtype='errorbar', color='black', label='QCD SR', ax=ax1)
-    hep.histplot(hbkg, histtype='fill', color='xkcd:pale gold', label='QCD Bkg Est', ax=ax1)
+    hep.histplot(hbkg, histtype='fill', color=plotyellow, label='QCD Bkg Est', ax=ax1)
     herr = np.sqrt(hbkg.variances())
 
     height = hUp.values() + hDn.values()
@@ -536,7 +545,7 @@ def plotClosureTestQCD():
                bottom=bottom,
                width = np.diff(edges), align='edge', hatch='//////', edgecolor='gray',
                linewidth=0, facecolor='none', alpha=0.7,
-               zorder=10, label='Unc.')
+               zorder=10, label='Stat + Syst')
 
 
     ratio_plot =  hsig / hbkg.values()
@@ -549,7 +558,7 @@ def plotClosureTestQCD():
                bottom=(np.ones_like(ratio_plot.values()) - ratioDn),
                width = np.diff(edges), align='edge', edgecolor='gray',
                linewidth=0, facecolor='gray', alpha=0.3,
-               zorder=10, label='Unc.')
+               zorder=10, label='Stat + Syst')
 
     hep.histplot(ratio_plot, ax=ax2, histtype='errorbar', color='black')
     ax2.set_ylim(-10,10)
@@ -626,11 +635,14 @@ def plotClosureTestQCD():
     
         text = 'Preliminary'+'\n'+dytext+', '+ btext
 
-        hep.cms.label('', data=True, lumi='{0:0.1f}'.format(functions.lumi[IOV]*lumifactor/1000), year=IOV.replace('all',''), loc=2, fontsize=20, ax=ax1)
+        lumitext = '{0:0.0f}'.format(functions.lumi[IOV]*lumifactor/1000) if IOV=='all' else '{0:0.1f}'.format(functions.lumi[IOV]*lumifactor/1000)
+        yeartext = '' if IOV=='all' else IOV.replace('all','')
+
+        hep.cms.label('', data=True, lumi=lumitext, year=yeartext, loc=2, fontsize=20, ax=ax1)
         hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
         hep.histplot(hsig, histtype='errorbar', color='black', label='QCD SR', ax=ax1)
-        hep.histplot(hbkg, histtype='fill', color='xkcd:pale gold', label='QCD Bkg Est', ax=ax1)
+        hep.histplot(hbkg, histtype='fill', color=plotyellow, label='QCD Bkg Est', ax=ax1)
         herr = np.sqrt(hbkg.variances())
 
         height = hUp.values() + hDn.values()
@@ -643,9 +655,8 @@ def plotClosureTestQCD():
                    bottom=bottom,
                    width = np.diff(edges), align='edge', hatch='//////', edgecolor='gray',
                    linewidth=0, facecolor='none', alpha=0.7,
-                   zorder=10, label='Unc.')
+                   zorder=10, label='Stat + Syst')
         
-
 
         ratio_plot =  hsig / hbkg.values()
         ratioUp = hUp.values() / hbkg.values()
@@ -657,7 +668,7 @@ def plotClosureTestQCD():
                    bottom=(np.ones_like(ratio_plot.values()) - ratioDn),
                    width = np.diff(edges), align='edge', edgecolor='gray',
                    linewidth=0, facecolor='gray', alpha=0.3,
-                   zorder=10, label='Unc.')
+                   zorder=10, label='Stat + Syst')
 
         hep.histplot(ratio_plot, ax=ax2, histtype='errorbar', color='black')
         ax2.set_ylim(-10,10)
@@ -692,6 +703,7 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
     
 
     hists = [
+        # 'jetdy',
         # 'jetpt',
         # 'jetpt1',
         # 'jety',
@@ -702,20 +714,23 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
         # 'jetphi1',
         # 'ttbarmass',
         # 'jetmass',
-        # 'jetmsd',
+        'jetmsd',
         # 'jetmass1',
-        # 'jetmsd1',
-        'ht'
+        'jetmsd1',
+        # 'ht'
     ]
 
 
     regions = [
         'inclusive',
-        # 'cenPass',
-        # 'cenFail',
-        # 'fwdPass',
-        # 'fwdFail'
+        'cenPass',
+        'cenFail',
+        'fwdPass',
+        'fwdFail'
     ]
+
+    lumitext = '{0:0.0f}'.format(functions.lumi[IOV]*lumifactor/1000) if IOV=='all' else '{0:0.1f}'.format(functions.lumi[IOV]*lumifactor/1000)
+    yeartext = '' if IOV=='all' else IOV.replace('all','')
 
     for catname in regions:
 
@@ -730,22 +745,36 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
     
     
             integrate_axes = {'systematic':'nominal'}
-    
-            if 'cen' in catname:
-                if 'Pass' in catname:
-                    integrate_axes = {'systematic':'nominal', 'anacat':signal_cen_cats}
-                elif 'Fail' in catname:
-                    integrate_axes = {'systematic':'nominal', 'anacat':antitag_cen_cats}
-            elif 'fwd' in catname:
-                if 'Pass' in catname:
-                    integrate_axes = {'systematic':'nominal', 'anacat':signal_fwd_cats}
-                elif 'Fail' in catname:
-                    integrate_axes = {'systematic':'nominal', 'anacat':antitag_fwd_cats}
-    
-    
+
+            if IOV=='all': 
+                integrate_axes = {}
+
+                if 'cen' in catname:
+                    if 'Pass' in catname:
+                        integrate_axes = {'anacat':signal_cen_cats}
+                    elif 'Fail' in catname:
+                        integrate_axes = {'anacat':antitag_cen_cats}
+                elif 'fwd' in catname:
+                    if 'Pass' in catname:
+                        integrate_axes = {'anacat':signal_fwd_cats}
+                    elif 'Fail' in catname:
+                        integrate_axes = {'anacat':antitag_fwd_cats}
 
 
-            print(integrate_axes)
+            else:
+                if 'cen' in catname:
+                    if 'Pass' in catname:
+                        integrate_axes = {'systematic':'nominal', 'anacat':signal_cen_cats}
+                    elif 'Fail' in catname:
+                        integrate_axes = {'systematic':'nominal', 'anacat':antitag_cen_cats}
+                elif 'fwd' in catname:
+                    if 'Pass' in catname:
+                        integrate_axes = {'systematic':'nominal', 'anacat':signal_fwd_cats}
+                    elif 'Fail' in catname:
+                        integrate_axes = {'systematic':'nominal', 'anacat':antitag_fwd_cats}
+        
+        
+
             
             
             h_ttbar = fttbar[histname][integrate_axes][{'anacat':sum}]
@@ -757,8 +786,9 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
             h_bkg = (h_qcd + h_ttbar)
             
             h_sig = fsig[histname][integrate_axes][{'anacat':sum}]
-            
-            
+
+
+
             
         
         
@@ -772,44 +802,96 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
                 h_data = h_data[::3j]
                 h_sig = h_sig[::3j]
                 h_qcd = h_qcd[::3j]
+
+
+
         
         
             nomvals = h_ttbar.values()
             systUp2 = np.zeros_like(nomvals)
             systDn2 = np.zeros_like(nomvals)
-        
-            
-            for syst in fttbar[histname].axes['systematic']:
 
-                integrate_axes['systematic'] = syst
-                
-                nomvals = h_ttbar.values()
 
-                if 'ttbarmass' in histname or 'jetmass' in histname:
-                    httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}][::3j]
-                    hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}][::3j]
-                else:
-                    httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}]
-                    hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}]
-            
-                if 'Up' in syst:
 
+            if IOV == 'all': 
+
+                for yy in ['2016all', '2017', '2018']:
+                    fttbar = util.load(coffea_dir+'/scale/TTbar_'+yy+'.coffea')
+                    fqcd = util.load(coffea_dir+'/scale/QCD_'+yy+'.coffea')
+
+                    integrate_axes['systematic'] = 'nominal'
+
+                    if 'ttbarmass' in histname or 'jetmass' in histname:
+                        nomvals = fttbar[histname][integrate_axes][{'anacat':sum}][::3j].values()
+                        qcdnomvals = fqcd[histname][integrate_axes][{'anacat':sum}][::3j].values()
                     
-                    systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
-                    systUp2 = systUp2 + systvals * systvals
-                if 'Down' in syst:
-                    systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
-                    systDn2 = systDn2 + systvals * systvals
-            
-            for syst in fqcd[histname].axes['systematic']:
-                nomvals = h_qcd.values()
-            
-                if 'Up' in syst:
-                    systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - nomvals, 0) 
-                    systUp2 = systUp2 + systvals * systvals
-                if 'Down' in syst:
-                    systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - nomvals, 0) 
-                    systDn2 = systDn2 + systvals * systvals
+                    else:
+                        nomvals = fttbar[histname][integrate_axes][{'anacat':sum}].values()
+                        qcdnomvals = fqcd[histname][integrate_axes][{'anacat':sum}].values()
+
+
+
+
+                    for syst in fttbar[histname].axes['systematic']:
+        
+                        integrate_axes['systematic'] = syst
+
+                        if 'ttbarmass' in histname or 'jetmass' in histname:
+                            httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}][::3j]
+                            hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}][::3j]
+                        else:
+                            httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}]
+                            hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}]
+                    
+                        if 'Up' in syst:
+                            systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
+                            systUp2 = systUp2 + systvals * systvals
+                        if 'Down' in syst:
+                            systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
+                            systDn2 = systDn2 + systvals * systvals
+                    
+                    for syst in fqcd[histname].axes['systematic']:
+                    
+                        if 'Up' in syst:
+                            systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - qcdnomvals, 0) 
+                            systUp2 = systUp2 + systvals * systvals
+                        if 'Down' in syst:
+                            systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - qcdnomvals, 0) 
+                            systDn2 = systDn2 + systvals * systvals
+
+
+            else:
+                for syst in fttbar[histname].axes['systematic']:
+    
+                    integrate_axes['systematic'] = syst
+                    
+                    nomvals = h_ttbar.values()
+    
+                    if 'ttbarmass' in histname or 'jetmass' in histname:
+                        httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}][::3j]
+                        hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}][::3j]
+                    else:
+                        httbar_syst = fttbar[histname][integrate_axes][{'anacat':sum}]
+                        hqcd_syst = fqcd[histname][integrate_axes][{'anacat':sum}]
+                
+                    if 'Up' in syst:
+    
+                        
+                        systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
+                        systUp2 = systUp2 + systvals * systvals
+                    if 'Down' in syst:
+                        systvals = np.where(httbar_syst.values()[0] > 0, httbar_syst.values() - nomvals, 0) 
+                        systDn2 = systDn2 + systvals * systvals
+                
+                for syst in fqcd[histname].axes['systematic']:
+                    nomvals = h_qcd.values()
+                
+                    if 'Up' in syst:
+                        systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - nomvals, 0) 
+                        systUp2 = systUp2 + systvals * systvals
+                    if 'Down' in syst:
+                        systvals = np.where(hqcd_syst.values()[0] > 0, hqcd_syst.values() - nomvals, 0) 
+                        systDn2 = systDn2 + systvals * systvals
             
             
             systUp = np.sqrt(systUp2)
@@ -861,18 +943,20 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
         
             
             
-            hep.cms.label('Work In Progress', data=True, lumi='{0:0.1f}'.format(lumi[IOV]/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
+            hep.cms.label('Preliminary', data=True, lumi=lumitext, year=yeartext, loc=1, fontsize=20, ax=ax1)
             hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
             if '2016all' in IOV:
                 h_bkg = h_qcd*1.5 + h_ttbar
+            elif 'all' in IOV:
+                normtodata = np.sum(h_data.values())/np.sum(h_bkg.values())
+                h_bkg = h_bkg * normtodata
 
-
-
+            
             if histname == 'ht':
 
                 
-                hep.histplot(h_ttbar, density=False, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
+                hep.histplot(h_ttbar, density=False, histtype='fill', color=plotred, label='SM TTbar', ax=ax1)
                 hep.histplot(h_sig, density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
 
 
@@ -888,14 +972,32 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
                 plt.savefig(savefigname)
                 plt.savefig(savefigname.replace('png', 'pdf'))
 
+
+
+
+            elif histname == 'jetdy':
+            
+             # print(np.sum(h_bkg.values())/np.sum(h_sig.values()))
+
             
 
-            else:
+                # print (np.abs(h_bkg.axes['jetdy'].edges))
+                # print (np.array(h_bkg.values(),dtype='int64'))
 
-                hep.histplot(h_bkg, density=False, histtype='fill', color='xkcd:pale gold', label='SM QCD', ax=ax1)
-                hep.histplot(h_ttbar, density=False, histtype='fill', color='xkcd:deep red', label='SM TTbar', ax=ax1)
-                hep.histplot(h_data, density=False, histtype='errorbar', color='black', label='Data', ax=ax1)
-                hep.histplot(h_sig, density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
+                # print( np.repeat(np.abs(h_bkg.axes['jetdy'].centers), np.array(h_bkg.values(),dtype='int64')))
+
+                hbkg_plot = np.repeat(np.abs(h_bkg.axes['jetdy'].centers), np.array(h_bkg.values(),dtype='int64'))
+
+
+                print(h_bkg.axes['jetdy'].edges[25:])
+                print(len(h_bkg.values()[25:]), len(h_bkg.values()[:25]))
+
+                print( np.sum(h_bkg.values()) /  np.sum(h_sig.values()))
+                hep.histplot(h_bkg.values()[:25][::-1] + h_bkg.values()[25:], bins=h_bkg.axes['jetdy'].edges[25:], density=False, histtype='fill', color=plotyellow, label='SM QCD', ax=ax1)
+                hep.histplot( h_ttbar.values()[:25][::-1] + h_ttbar.values()[25:], bins=h_ttbar.axes['jetdy'].edges[25:], density=False, histtype='fill', color=plotred, label='SM TTbar', ax=ax1)
+                hep.histplot( h_data.values()[:25][::-1] + h_data.values()[25:], bins=h_data.axes['jetdy'].edges[25:], density=False, histtype='errorbar', color='black', label='Data', ax=ax1)
+                h_sig_plot = h_sig.values()[:25][::-1] + h_sig.values()[25:]
+                hep.histplot(11.028627114558727*h_sig_plot, bins=h_sig.axes['jetdy'].edges[25:], density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
 
             
             
@@ -903,29 +1005,35 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
                     edges = h_ttbar.axes['jetmass'].edges
                 else:
                     edges = h_ttbar.axes[histname.replace('1','')].edges
-            
+
+
                 height = systUp + systDn
                 bottom = h_bkg.values() - systDn
                 
+
+
+             
                 
-                
-                ax1.bar(x = edges[:-1],
-                           height=height,
-                           bottom=bottom,
-                           width = np.diff(edges), align='edge', hatch='///', edgecolor='gray',
+                ax1.bar(x = edges[25:][:-1],
+                           height=height[:25][::-1] + height[25:],
+                           bottom=bottom[:25][::-1] + bottom[25:],
+                           width = np.diff(edges[25:]), align='edge', hatch='///', edgecolor='gray',
                            linewidth=0, facecolor='none', alpha=0.8,
-                           zorder=10, label='Unc.')
+                           zorder=10, label='Stat + Syst')
                 
-                
-                ax2.bar(x = edges[:-1],
-                           height=height/h_bkg.values(),
-                           bottom=bottom/h_bkg.values(),
-                           width = np.diff(edges), align='edge',
+                height_ratio = height/h_bkg.values()
+                bottom_ratio = bottom/h_bkg.values()
+                ax2.bar(x = edges[25:][:-1],
+                           height=0.5*(height_ratio[:25][::-1] + height_ratio[25:]),
+                           bottom=0.5*(bottom_ratio[:25][::-1] + bottom_ratio[25:]),
+                           width = np.diff(edges[25:]), align='edge',
                            linewidth=0, facecolor='lightgrey', alpha=0.8,
-                           zorder=0, label='Unc.')
+                           zorder=0, label='Stat + Syst')
                 ax2.axhline(1, color='black', ls='--')
-                
-                hep.histplot(h_data/h_bkg.values(), density=False, histtype='errorbar', color='black', ax=ax2)
+
+
+                ratio_hist = h_data/h_bkg.values()
+                hep.histplot(0.5*ratio_hist + 0.5*ratio_hist.values()[::-1], density=False, yerr=ratio_hist.variances(), histtype='errorbar', color='black', ax=ax2)
                 
                 
                 
@@ -977,9 +1085,21 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
                 elif 'jetphi' in histname:
                     ax1.set_xlim(-3,3)
                     ax2.set_xlim(-3,3)
+
+                elif 'jetdy' in histname:
+                    
+                    # ax1.axvline(-1, color='black', ls='--')
+                    ax1.axvline(1, color='black', ls='--')
+                    ax1.set_xlim(0,3)
+                    ax2.set_xlim(0,3)
+                    ax2.set_xlabel('|$\Delta y$|')
                 
                 
-                ax1.set_ylim(1e-1, 1e7)
+                elif 'jety' in histname:
+                    ax1.set_xlim(-2.4,2.4)
+                    ax2.set_xlim(-2.4,2.4)
+                    
+                ax1.set_ylim(1e-1, 16000)
                 ax2.set_ylim(1-1,1+1)
                 
                 
@@ -987,7 +1107,148 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
                 # plt.axvline(-1, color='darkred', ls='--')
                 # plt.axvline(1, color='darkred', ls='--')
                 # ax1.set_xlim(400,None)
-                ax1.set_yscale('log')
+                # ax1.set_yscale('log')
+                ax1.set_xlabel('')
+                
+                ax1.set_ylabel('Events/Bin')
+                ax2.set_ylabel('Data/MC')
+    
+    
+                if histname == 'jetmass':
+                    ax2.set_xlabel('Jet mass [GeV]')
+                
+                
+                savefigname = f'images/{dirstring}/png/kinematics/{IOV}/{histname}_{catname}.png'
+                print('saving', savefigname)
+                plt.savefig(savefigname)
+                plt.savefig(savefigname.replace('png', 'pdf'))
+
+            
+            else:
+
+
+                hep.histplot(h_bkg, density=False, histtype='fill', color=plotyellow, label='SM QCD', ax=ax1)
+                hep.histplot(h_ttbar, density=False, histtype='fill', color=plotred, label='SM TTbar', ax=ax1)
+                hep.histplot(h_data, density=False, histtype='errorbar', color='black', label='Data', ax=ax1)
+                hep.histplot(h_sig, density=False, histtype='step', color='black', label='$g_{KK}$ (2 TeV)', ax=ax1)
+
+                
+            
+                if 'jetmsd' in histname:
+                    edges = h_ttbar.axes['jetmass'].edges
+                else:
+                    edges = h_ttbar.axes[histname.replace('1','')].edges
+
+
+                height = systUp + systDn
+                bottom = h_bkg.values() - systDn
+                
+
+
+             
+                
+                ax1.bar(x = edges[:-1],
+                           height=height,
+                           bottom=bottom,
+                           width = np.diff(edges), align='edge', hatch='///', edgecolor='gray',
+                           linewidth=0, facecolor='none', alpha=0.8,
+                           zorder=10, label='Stat + Syst')
+                
+                height_ratio = height/h_bkg.values()
+                bottom_ratio = bottom/h_bkg.values()
+                ax2.bar(x = edges[:-1],
+                           height=height_ratio,
+                           bottom=bottom_ratio,
+                           width = np.diff(edges), align='edge',
+                           linewidth=0, facecolor='lightgrey', alpha=0.8,
+                           zorder=0, label='Stat + Syst')
+                ax2.axhline(1, color='black', ls='--')
+
+
+                ratio_hist = h_data/h_bkg.values()
+                hep.histplot(ratio_hist, density=False, histtype='errorbar', color='black', ax=ax2)
+                
+                
+                
+                
+                # print((h_data/h_bkg.values()).values())
+                # print(np.average((h_data/h_bkg.values()).values()))
+                
+                # ax2.bar(x = edges[:-1],
+                #            height=1.5,
+                #            bottom=0.5,
+                #            width = np.diff(edges), align='edge', edgecolor='gray',
+                #            linewidth=0, facecolor='gray', alpha=0.8,
+                #            zorder=10, label='Syst. Unc.')
+                
+            
+                
+                # elif 'jetphi' in histname:
+                #     plt.savefig('jetphi_'+IOV+'.pdf')
+            
+            
+                if 'jetmass' in histname:
+                    ax1.set_xlim(25,500)
+                    ax2.set_xlim(25,500)
+                    ax1.set_xlabel('Jet mass [GeV]')
+            
+                elif 'jetmsd' in histname:
+                    ax1.set_xlim(25,500)
+                    ax2.set_xlim(25,500)   
+            
+                elif 'ttbarmass' in histname:
+                    ax1.set_xlim(800,6800)
+                    ax2.set_xlim(800,6800)
+            
+            
+                
+                elif 'jetpt' in histname:
+                    ax1.set_xlim(400,2000)
+                    ax2.set_xlim(400,2000)
+                
+                
+                elif 'ht' in histname:
+                    ax1.set_xlim(500,4500)
+                    ax2.set_xlim(500,4500)
+                
+                elif 'jeteta' in histname:
+                    ax1.set_xlim(-2.4,2.4)
+                    ax2.set_xlim(-2.4,2.4)
+            
+                elif 'jetphi' in histname:
+                    ax1.set_xlim(-3,3)
+                    ax2.set_xlim(-3,3)
+
+                elif 'jetdy' in histname:
+                    
+                    # ax1.axvline(-1, color='black', ls='--')
+                    ax1.axvline(1, color='black', ls='--')
+                    ax1.set_xlim(0,3)
+                    ax2.set_xlim(0,3)
+                    ax2.set_xlabel('|$\Delta y$|')
+                
+                
+                elif 'jety' in histname:
+                    ax1.set_xlim(-2.4,2.4)
+                    ax2.set_xlim(-2.4,2.4)
+                    
+                
+                
+                
+                if 'jetmsd' in histname:
+                    ax2.set_xlabel('$m_{t}$ [GeV]')
+                    ax1.set_ylim(1e-1, 0.3*np.max(h_data.values()))
+
+
+                else:
+                    ax1.set_yscale('log')
+                    ax1.set_ylim(1e-1, 1e7)
+                    
+                
+                ax2.set_ylim(1-1,1+1)
+                
+                
+                ax1.legend(loc=1, fontsize=10)
                 ax1.set_xlabel('')
                 
                 ax1.set_ylabel('Events/Bin')
@@ -1004,12 +1265,16 @@ def plotKinematics(IOV, dataset='TTbar', dirstring=''):
                 plt.savefig(savefigname.replace('png', 'pdf'))
 
 
+
 plotKinematics(IOV, dataset='TTbar', dirstring=savedirstring)
+
 
 # plotSystematics(IOV, dataset='RSGluon5000', dirstring=savedirstring)
 # plotSystematics(IOV, dataset='RSGluon2000', dirstring=savedirstring)
-
 # plotSystematics(IOV, dataset='TTbar', dirstring=savedirstring)
+
+
+
 # plotSystematics(IOV, dataset='TTbar', dirstring=savedirstring)
 
 

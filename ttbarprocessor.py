@@ -120,6 +120,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.tau32Cut = tau32Cut
         self.ak8PtMin = ak8PtMin
         self.bdisc = bdisc
+        self.deepAK8Cut = deepAK8Cut
         self.useDeepAK8 = useDeepAK8
         self.useDeepCSV = useDeepCSV
         self.means_stddevs = defaultdict()
@@ -246,6 +247,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         jety_axis      = hist.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
         jetdy_axis      = hist.axis.Regular(50, -3, 3, name="jetdy", label=r"$\Delta y$")
         jetphi_axis      = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
+        deltaphi_axis      = hist.axis.Regular(50, 0, 5, name="deltaphi", label=r"$\Delta \phi$")
         cats_axis        = hist.axis.IntCategory(range(len(self.anacats)), name="anacat", label="Analysis Category")
         manual_axis      = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
         btag_axis        = hist.axis.Regular(10, 0, 1, name="bdisc", label=r"DeepCSV")
@@ -270,6 +272,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             'jeteta_nocut'  : hist.Hist(jeteta_axis, storage="weight", name="Counts"),
             'jety_nocut'  : hist.Hist(jeteta_axis, storage="weight", name="Counts"),
             'jetphi_nocut'  : hist.Hist(jetphi_axis, storage="weight", name="Counts"),
+            'deltaPhi'  : hist.Hist(deltaphi_axis, storage="weight", name="Counts"),
             'jeteta'  : hist.Hist(syst_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             'jety'  : hist.Hist(syst_axis, cats_axis, jety_axis, storage="weight", name="Counts"),
             'jetdy'  : hist.Hist(syst_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
@@ -580,7 +583,10 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         }
 
-        selection.add('trigger', (events.HLT[triggernames[self.iov][0]] | events.HLT[triggernames[self.iov][1]]) )
+        try:
+            selection.add('trigger', (events.HLT[triggernames[self.iov][0]] | events.HLT[triggernames[self.iov][1]]) )
+        except:
+            selection.add('trigger', (events.HLT[triggernames[self.iov][0]]))
 
 
         # objects #
@@ -899,6 +905,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         dPhiCut = (np.abs(jet0.p4.delta_phi(jet1.p4)) > 2.1)
+
+        if isNominal:
+            output['deltaPhi'].fill(deltaphi = np.abs(jet0.p4.delta_phi(jet1.p4)))
         
         
         # ttbar candidates have 2 subjets #
@@ -1195,6 +1204,100 @@ class TTbarResProcessor(processor.ProcessorABC):
             logger.debug('memory:%s: q2 systematics %s:%s', time.time(), correction, get_memory_usage())
 
                 
+
+
+            if 'ttag_pt1' in self.systematics:
+
+                ptbins = [0,400,480,600]
+
+
+  
+
+                ttag_scale_factors = {
+                                        '2016':{
+                                            'tight':  {'nominal': [0.92,1.01,0.84,1.00], 'up': [1.04,1.18,0.9,1.07], 'down': [0.82,0.84,0.78,0.94]},
+                                            'medium': {'nominal': [0.89,1.02,0.93,1.00], 'up': [0.97,1.07,0.97,1.05], 'down': [0.81,0.97,0.89,0.95]},
+                                            'loose':  {'nominal': [0.98,0.95,0.97,1.00], 'up': [0.98,0.99,1.0,1.04], 'down': [0.91,0.91,0.94,0.96]}  
+                                        },
+                                        '2016APV':{
+                                            'tight':  {'nominal': [0.92,1.01,0.84,1.00], 'up': [1.04,1.18,0.9,1.07], 'down': [0.82,0.84,0.78,0.94]},
+                                            'medium': {'nominal': [0.89,1.02,0.93,1.00], 'up': [0.97,1.07,0.97,1.05], 'down': [0.81,0.97,0.89,0.95]},
+                                            'loose':  {'nominal': [0.98,0.95,0.97,1.00], 'up': [0.98,0.99,1.0,1.04], 'down': [0.91,0.91,0.94,0.96]}  
+                                        },
+                                        '2017':{
+                                            'tight':  {'nominal': [0.88,0.9,0.95,0.97], 'up': [0.96,0.95,1.0,1.03], 'down': [0.8,0.85,0.9,0.91]},
+                                            'medium': {'nominal': [0.95,1.0,0.98,0.98], 'up': [1.01,1.04,1.02,1.02], 'down': [0.89,0.96,0.94,0.94]},
+                                            'loose':  {'nominal': [0.95,0.98,0.97,0.97], 'up': [1.0,1.01,1.0,1.01], 'down': [0.9,0.95,0.94,0.93]}  
+                                        },
+                                        '2018':{
+                                            'tight':  {'nominal': [0.81,0.93,0.96,0.93], 'up': [0.88,0.98,1.02,1.01], 'down': [0.74,0.88,0.92,0.85]},
+                                            'medium': {'nominal': [0.90,0.97,0.98,0.95], 'up': [0.95,1.0,1.01,0.98], 'down': [0.85,0.94,0.95,0.92]},
+                                            'loose':  {'nominal': [0.96,1.00,0.98,0.99], 'up': [1.0,1.03,1.0,1.02], 'down': [0.92,0.97,0.96,0.96]}
+                                        }   
+                                    }
+                
+                nomsf = np.array(ttag_scale_factors[self.iov][self.deepAK8Cut]['nominal'])
+                upsf = np.array(ttag_scale_factors[self.iov][self.deepAK8Cut]['up'])
+                downsf = np.array(ttag_scale_factors[self.iov][self.deepAK8Cut]['down'])
+                
+                nomsf_fail = np.array(ttag_scale_factors[self.iov]['medium']['nominal'])
+                upsf_fail = np.array(ttag_scale_factors[self.iov]['medium']['up'])
+                downsf_fail = np.array(ttag_scale_factors[self.iov]['medium']['down'])
+
+                jet0_ptbins = np.digitize(ak.to_numpy(jetpt), ptbins) - 1
+                jet1_ptbins = np.digitize(ak.to_numpy(jetpt1), ptbins) - 1
+
+
+                ttagSFNom = np.ones(len(events))
+                ttagSFUp = np.ones(len(events))
+                ttagSFDown = np.ones(len(events))
+
+    
+                # # apply pass ttag SF to events
+                # ttagSFNom = np.where(ttag2, nomsf[jet0_ptbins]*nomsf[jet1_ptbins],ttagSFNom)
+                # ttagSFUp = np.where(ttag2, upsf[jet0_ptbins]*upsf[jet1_ptbins],ttagSFUp)
+                # ttagSFDown = np.where(ttag2, downsf[jet0_ptbins]*downsf[jet1_ptbins],ttagSFDown)
+
+                # # apply fail ttag SF to events
+                # ttagSFNom = np.where(antitag, nomsf[jet0_ptbins]*nomsf_fail[jet1_ptbins],ttagSFNom)
+                # ttagSFUp = np.where(antitag, upsf[jet0_ptbins]*upsf_fail[jet1_ptbins],ttagSFUp)
+                # ttagSFDown = np.where(antitag, downsf[jet0_ptbins]*downsf_fail[jet1_ptbins],ttagSFDown)
+
+
+                ttagSFNom_1 = np.where(jet0_ptbins==1, nomsf[1], 1.0) * np.where((jet1_ptbins==1 & ttag2), nomsf[1], 1.0) * np.where((jet1_ptbins==1 & antitag), nomsf_fail[1], 1.0)
+                ttagSFUp_1 = np.where(jet0_ptbins==1, upsf[1], 1.0) * np.where((jet1_ptbins==1 & ttag2), upsf[1], 1.0) * np.where((jet1_ptbins==1 & antitag), upsf_fail[1], 1.0)
+                ttagSFDown_1 = np.where(jet0_ptbins==1, downsf[1], 1.0) * np.where((jet1_ptbins==1 & ttag2), downsf[1], 1.0) * np.where((jet1_ptbins==1 & antitag), downsf_fail[1], 1.0)
+
+                ttagSFNom_2 = np.where(jet0_ptbins==2, nomsf[2], 1.0) * np.where((jet1_ptbins==2 & ttag2), nomsf[2], 1.0) * np.where((jet1_ptbins==2 & antitag), nomsf_fail[2], 1.0)
+                ttagSFUp_2 = np.where(jet0_ptbins==2, upsf[2], 1.0) * np.where((jet1_ptbins==2 & ttag2), upsf[2], 1.0) * np.where((jet1_ptbins==2 & antitag), upsf_fail[2], 1.0)
+                ttagSFDown_2 = np.where(jet0_ptbins==2, downsf[2], 1.0) * np.where((jet1_ptbins==2 & ttag2), downsf[2], 1.0) * np.where((jet1_ptbins==2 & antitag), downsf_fail[2], 1.0)
+
+                ttagSFNom_3 = np.where(jet0_ptbins==3, nomsf[3], 1.0) * np.where((jet1_ptbins==3 & ttag2), nomsf[3], 1.0) * np.where((jet1_ptbins==3 & antitag), nomsf_fail[3], 1.0)
+                ttagSFUp_3 = np.where(jet0_ptbins==3, upsf[3], 1.0) * np.where((jet1_ptbins==3 & ttag2), upsf[3], 1.0) * np.where((jet1_ptbins==3 & antitag), upsf_fail[3], 1.0)
+                ttagSFDown_3 = np.where(jet0_ptbins==3, downsf[3], 1.0) * np.where((jet1_ptbins==3 & ttag2), downsf[3], 1.0) * np.where((jet1_ptbins==3 & antitag), downsf_fail[3], 1.0)
+
+
+              
+            
+                self.weights[correction].add("ttag_pt1", 
+                    weight=ttagSFNom_1, 
+                    weightUp=ttagSFUp_1, 
+                    weightDown=ttagSFDown_1,
+                           )
+
+                self.weights[correction].add("ttag_pt2", 
+                    weight=ttagSFNom_2, 
+                    weightUp=ttagSFUp_2, 
+                    weightDown=ttagSFDown_2,
+                           )
+                
+                self.weights[correction].add("ttag_pt3", 
+                    weight=ttagSFNom_3, 
+                    weightUp=ttagSFUp_3, 
+                    weightDown=ttagSFDown_3,
+                           )
+            
+            
             if 'btag' in self.systematics:
                 
                 btag_wgts_nom = np.ones(len(events))

@@ -16,7 +16,6 @@ from dask.distributed import Client, performance_report
 import warnings
 warnings.filterwarnings("ignore")
 
-savedir = 'outputs/'
 default_datastets = ['JetHT', 'TTbar', 'QCD']
 default_signals = ['RSGluon', 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'ZPrime1']
 
@@ -35,7 +34,7 @@ if __name__ == "__main__":
     
 
     # directory where output files are saved
-    savedir = f'outputs/an_v4_plots/' 
+    savedir = f'outputs/ttagSF/' 
     
     parser = argparse.ArgumentParser(
                     prog='ttbaranalysis.py',
@@ -134,7 +133,10 @@ if __name__ == "__main__":
         'jer',
         'pileup',
         'pdf',
-        'q2'
+        'q2',
+        'ttag_pt1',
+        'ttag_pt2',
+        'ttag_pt3'
     ]
     
     if ('2016' in IOV) or ('2017' in IOV): systematics.append('prefiring')
