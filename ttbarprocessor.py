@@ -840,6 +840,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                             SortedFatJets[:,0]
                                    )
 
+            mcut_s0 = ((self.minMSD < jet0.msoftdrop) & (jet0.msoftdrop < self.maxMSD) )
+            mcut_s1 = ((self.minMSD < jet1.msoftdrop) & (jet1.msoftdrop < self.maxMSD) )
+
 
 
             logger.debug('SortedFatJets:%s:FatJets.pt:%s:%s', time.time(), FatJets.pt, correction)
@@ -854,14 +857,14 @@ class TTbarResProcessor(processor.ProcessorABC):
             # signal = pass region for 2DAlphabet
             # both jets pass deepak8 tagger
             ttag_s0 = (jet0.deepTagMD_TvsQCD > self.deepAK8disc)
-            ttag_s1 = (jet1.deepTagMD_TvsQCD > self.deepAK8disc)
+            ttag_s1 = (jet1.deepTagMD_TvsQCD > self.deepAK8disc) & (mcut_s1)
 
             
             # antitag = fail region for 2DAlphabet
             # leading (in deepak8 disc) jet passes deepak8 tagger
             # subleading (in deepak8 disc) jet fails deepak8 tagger         
             antitag_disc = ((jet1.deepTagMD_TvsQCD < self.deepAK8disc) & (jet1.deepTagMD_TvsQCD > self.deepAK8low))
-            antitag = (antitag_disc) & (ttag_s0)
+            antitag = (antitag_disc) & (ttag_s0) & (mcut_s1)
 
 
             
