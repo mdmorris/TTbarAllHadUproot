@@ -1153,10 +1153,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         denominator = np.where(antitag, jet1.p4.p, -1)
         
         # pt reweighting #
-#         if ('TTbar' in dataset):
-#             ttbar_wgt = pTReweighting(jet0.pt, jet1.pt)
-#             weights[correction].add('ptReweighting', ak.flatten(ttbar_wgt))
-                 
+        if ('TTbar' in dataset):
+            ttbar_wgt = pTReweighting(jet0.pt, jet1.pt)
+            self.weights[correction].add('ptReweighting', ttbar_wgt)
+             
         if (not self.noSyst) and (not isData):
                     
             if 'pileup' in self.systematics:
