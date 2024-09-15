@@ -440,6 +440,10 @@ class TTbarResProcessor(processor.ProcessorABC):
 
 
 
+        # print('corrected jets info')
+        # for key in corrected_jets.fields:
+        #     print(key)
+
         
         
         if 'jes' in self.systematics:
@@ -453,7 +457,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 ({"Jet": corrected_jets.JER.up, "FatJet": corrected_fatjets.JER.up}, "jerUp"),
                 ({"Jet": corrected_jets.JER.down, "FatJet": corrected_fatjets.JER.down}, "jerDown"),
             ])
-            
             
         
             
@@ -1156,7 +1159,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         if ('TTbar' in dataset):
             ttbar_wgt = pTReweighting(jet0.pt, jet1.pt)
             self.weights[correction].add('ptReweighting', ttbar_wgt)
-             
+                 
         if (not self.noSyst) and (not isData):
                     
             if 'pileup' in self.systematics:
@@ -1206,8 +1209,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
             logger.debug('memory:%s: q2 systematics %s:%s', time.time(), correction, get_memory_usage())
 
-                
-
 
             if 'ttag_pt1' in self.systematics:
 
@@ -1215,29 +1216,53 @@ class TTbarResProcessor(processor.ProcessorABC):
 
 
   
-
+                # tight SF from semileptonic channel
                 ttag_scale_factors = {
                                         '2016':{
-                                            'tight':  {'nominal': [0.92,1.01,0.84,1.00], 'up': [1.04,1.18,0.9,1.07], 'down': [0.82,0.84,0.78,0.94]},
+                                            'tight':  {'nominal': [1.06307,1.00915, 0.959828,0.953186], 'up': [1.06307 + 0.0674691,1.00915 + 0.0493248,0.959828 + 0.0573197,0.953186 + 0.088647], 'down': [1.06307 - 0.0643538,1.00915 - 0.0471264,0.959828 - 0.053677,0.953186 - 0.0811683]},
                                             'medium': {'nominal': [0.89,1.02,0.93,1.00], 'up': [0.97,1.07,0.97,1.05], 'down': [0.81,0.97,0.89,0.95]},
                                             'loose':  {'nominal': [0.98,0.95,0.97,1.00], 'up': [0.98,0.99,1.0,1.04], 'down': [0.91,0.91,0.94,0.96]}  
                                         },
                                         '2016APV':{
-                                            'tight':  {'nominal': [0.92,1.01,0.84,1.00], 'up': [1.04,1.18,0.9,1.07], 'down': [0.82,0.84,0.78,0.94]},
+                                            'tight':  {'nominal': [0.963907,0.95608,1.08565,1.04144], 'up': [0.963907 + 0.0657521,0.95608 + 0.0523411,1.08565 + 0.0652324,1.04144 + 0.107837], 'down': [0.963907 - 0.0632699,0.95608 - 0.049472 ,1.08565 - 0.0601419,1.04144 - 0.0954507]},
                                             'medium': {'nominal': [0.89,1.02,0.93,1.00], 'up': [0.97,1.07,0.97,1.05], 'down': [0.81,0.97,0.89,0.95]},
                                             'loose':  {'nominal': [0.98,0.95,0.97,1.00], 'up': [0.98,0.99,1.0,1.04], 'down': [0.91,0.91,0.94,0.96]}  
                                         },
                                         '2017':{
-                                            'tight':  {'nominal': [0.88,0.9,0.95,0.97], 'up': [0.96,0.95,1.0,1.03], 'down': [0.8,0.85,0.9,0.91]},
+                                            'tight':  {'nominal': [1.03471,0.969986,0.904211,0.961509], 'up': [1.03471 + 0.0510846,0.969986 + 0.0373177,0.904211 + 0.0461349,0.961509 + 0.0749298], 'down': [1.03471 - 0.0485778,0.969986 - 0.0357655,0.904211 - 0.0423708,0.961509 - 0.0687028]},
                                             'medium': {'nominal': [0.95,1.0,0.98,0.98], 'up': [1.01,1.04,1.02,1.02], 'down': [0.89,0.96,0.94,0.94]},
                                             'loose':  {'nominal': [0.95,0.98,0.97,0.97], 'up': [1.0,1.01,1.0,1.01], 'down': [0.9,0.95,0.94,0.93]}  
                                         },
                                         '2018':{
-                                            'tight':  {'nominal': [0.81,0.93,0.96,0.93], 'up': [0.88,0.98,1.02,1.01], 'down': [0.74,0.88,0.92,0.85]},
+                                            'tight':  {'nominal': [1.04405,0.985968,0.973327,0.936484], 'up': [1.04405 + 0.0370057,0.985968 + 0.0305365,0.973327 + 0.0422079,0.936484 + 0.0651684], 'down': [1.04405 - 0.0358613,0.985968 - 0.0295636,0.973327 - 0.0390236,0.936484 - 0.0615519]},
                                             'medium': {'nominal': [0.90,0.97,0.98,0.95], 'up': [0.95,1.0,1.01,0.98], 'down': [0.85,0.94,0.95,0.92]},
                                             'loose':  {'nominal': [0.96,1.00,0.98,0.99], 'up': [1.0,1.03,1.0,1.02], 'down': [0.92,0.97,0.96,0.96]}
                                         }   
                                     }
+
+                # preUL scale factors 
+                # ttag_scale_factors = {
+                #                         '2016':{
+                #                             'tight':  {'nominal': [0.92,1.01,0.84,1.00], 'up': [1.04,1.18,0.9,1.07], 'down': [0.82,0.84,0.78,0.94]},
+                #                             'medium': {'nominal': [0.89,1.02,0.93,1.00], 'up': [0.97,1.07,0.97,1.05], 'down': [0.81,0.97,0.89,0.95]},
+                #                             'loose':  {'nominal': [0.98,0.95,0.97,1.00], 'up': [0.98,0.99,1.0,1.04], 'down': [0.91,0.91,0.94,0.96]}  
+                #                         },
+                #                         '2016APV':{
+                #                             'tight':  {'nominal': [0.92,1.01,0.84,1.00], 'up': [1.04,1.18,0.9,1.07], 'down': [0.82,0.84,0.78,0.94]},
+                #                             'medium': {'nominal': [0.89,1.02,0.93,1.00], 'up': [0.97,1.07,0.97,1.05], 'down': [0.81,0.97,0.89,0.95]},
+                #                             'loose':  {'nominal': [0.98,0.95,0.97,1.00], 'up': [0.98,0.99,1.0,1.04], 'down': [0.91,0.91,0.94,0.96]}  
+                #                         },
+                #                         '2017':{
+                #                             'tight':  {'nominal': [0.88,0.9,0.95,0.97], 'up': [0.96,0.95,1.0,1.03], 'down': [0.8,0.85,0.9,0.91]},
+                #                             'medium': {'nominal': [0.95,1.0,0.98,0.98], 'up': [1.01,1.04,1.02,1.02], 'down': [0.89,0.96,0.94,0.94]},
+                #                             'loose':  {'nominal': [0.95,0.98,0.97,0.97], 'up': [1.0,1.01,1.0,1.01], 'down': [0.9,0.95,0.94,0.93]}  
+                #                         },
+                #                         '2018':{
+                #                             'tight':  {'nominal': [0.81,0.93,0.96,0.93], 'up': [0.88,0.98,1.02,1.01], 'down': [0.74,0.88,0.92,0.85]},
+                #                             'medium': {'nominal': [0.90,0.97,0.98,0.95], 'up': [0.95,1.0,1.01,0.98], 'down': [0.85,0.94,0.95,0.92]},
+                #                             'loose':  {'nominal': [0.96,1.00,0.98,0.99], 'up': [1.0,1.03,1.0,1.02], 'down': [0.92,0.97,0.96,0.96]}
+                #                         }   
+                #                     }
                 
                 nomsf = np.array(ttag_scale_factors[self.iov][self.deepAK8Cut]['nominal'])
                 upsf = np.array(ttag_scale_factors[self.iov][self.deepAK8Cut]['up'])
